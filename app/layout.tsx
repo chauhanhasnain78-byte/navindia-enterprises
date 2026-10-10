@@ -19,7 +19,6 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL(companyConfig.siteUrl),
   title: {
     default: `${companyConfig.name} | ${companyConfig.tagline}`,
     template: `%s | ${companyConfig.name}`,
@@ -51,12 +50,6 @@ export const metadata: Metadata = {
     siteName: companyConfig.name,
     locale: "en_US",
     type: "website",
-    images: [
-      {
-        url: companyConfig.logo.path,
-        alt: companyConfig.name,
-      },
-    ],
   },
   twitter: {
     card: "summary_large_image",
@@ -72,6 +65,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={manrope.variable}>
+      <head>
+        <meta property="og:image" content={companyConfig.logo.path} />
+        <meta property="og:image:alt" content={companyConfig.name} />
+        <meta name="twitter:image" content={companyConfig.logo.path} />
+      </head>
       <body className="min-h-screen flex flex-col font-sans bg-white text-navy selection:bg-amber-accent selection:text-navy-dark">
         <Header />
         <main className="flex-1">{children}</main>

@@ -41,7 +41,6 @@ export interface HighlightedCountry {
 
 export const companyConfig = {
   name: "NAV INDIA ENTERPRISES",
-  siteUrl: process.env.NEXT_PUBLIC_SITE_URL || "https://navindiaenterprises.com",
   tagline: "You Specify. We Source. We Supply.",
   heroSupportingLine:
     "Industrial products arranged to your specification and supplied worldwide.",
@@ -110,16 +109,16 @@ export const companyConfig = {
       slug: "hoses",
       name: "Hoses",
       description:
-        "Industrial hoses and flexible fluid transfer assemblies arranged to your required size and duty.",
+        "Industrial hoses arranged to your required size and duty.",
       shapeType: "hose",
-      keywords: ["hose", "hoses", "flexible", "fluid", "tubing", "pipe"],
+      keywords: ["hose", "hoses"],
     },
     {
       id: "fasteners",
       slug: "fasteners",
       name: "Fasteners (bolts, nuts, washers, studs, eye bolts)",
       description:
-        "Bolts, nuts, washers, threaded studs, and eye bolts arranged to your drawing or standard requirement.",
+        "Fasteners arranged to your required size, grade, and specification.",
       shapeType: "fastener",
       keywords: [
         "fasteners",
@@ -128,8 +127,6 @@ export const companyConfig = {
         "washers",
         "studs",
         "eye bolts",
-        "screws",
-        "threaded",
       ],
     },
     {
@@ -137,80 +134,45 @@ export const companyConfig = {
       slug: "seals-and-o-rings",
       name: "Seals and O-Rings",
       description:
-        "Industrial sealing rings, gaskets, and O-rings arranged to your specified dimensions and material.",
+        "O-rings and sealing products arranged to your dimensions and material.",
       shapeType: "seal",
-      keywords: ["seals", "o-rings", "orings", "gaskets", "sealing", "ring"],
+      keywords: ["seals", "o-rings", "orings", "sealing"],
     },
     {
       id: "abrasives",
       slug: "abrasives",
       name: "Abrasives",
       description:
-        "Cutting, grinding, surface conditioning, and finishing abrasives arranged for industrial operations.",
+        "Industrial abrasives arranged to your application and specification.",
       shapeType: "abrasive",
-      keywords: [
-        "abrasives",
-        "grinding",
-        "cutting",
-        "disc",
-        "wheel",
-        "sanding",
-        "polishing",
-      ],
+      keywords: ["abrasives", "abrasive"],
     },
     {
       id: "lifting-products",
       slug: "lifting-products",
       name: "Lifting Products",
       description:
-        "Industrial rigging, slings, shackles, hooks, and material handling hardware arranged to your specification.",
+        "Lifting-related products arranged to your specification.",
       shapeType: "lifting",
-      keywords: [
-        "lifting",
-        "rigging",
-        "shackles",
-        "hooks",
-        "slings",
-        "chains",
-        "hoist",
-      ],
+      keywords: ["lifting", "lifting products"],
     },
     {
       id: "ms-ss-industrial-products",
       slug: "ms-ss-industrial-products",
       name: "MS/SS Industrial Products",
       description:
-        "Mild steel and stainless steel industrial components, fittings, and hardware arranged to your requirement.",
+        "Mild steel and stainless steel industrial products arranged to your requirement.",
       shapeType: "metal",
-      keywords: [
-        "ms",
-        "ss",
-        "mild steel",
-        "stainless steel",
-        "fittings",
-        "flanges",
-        "plates",
-        "pipes",
-        "structural",
-      ],
+      keywords: ["ms", "ss", "mild steel", "stainless steel"],
     },
     {
       id: "other-industrial-supplies",
       slug: "other-industrial-supplies",
       name: "Other Industrial Supplies",
       description:
-        "Additional mechanical, maintenance, and custom industrial items arranged against your enquiry list.",
+        "Other industrial items arranged against your enquiry list.",
       shapeType: "general",
-      keywords: [
-        "other",
-        "industrial",
-        "supplies",
-        "mro",
-        "maintenance",
-        "custom",
-        "hardware",
-        "spares",
-      ],
+      keywords: ["other", "industrial", "supplies", "items"],
     },
   ] as ProductCategory[],
   howWeWorkSteps: [
@@ -257,7 +219,7 @@ export const companyConfig = {
       id: "consolidation",
       title: "Multiple products in one enquiry",
       description:
-        "Combine hoses, fasteners, seals, abrasives, lifting gear, and MS/SS items into a single streamlined RFQ.",
+        "Combine items across multiple industrial categories into a single streamlined quotation request.",
       iconName: "consolidation",
     },
     {

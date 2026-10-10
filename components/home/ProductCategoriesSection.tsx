@@ -96,43 +96,46 @@ export function ProductCategoriesSection() {
           </motion.div>
         )}
 
-        {/* Search Bar directly below categories */}
+        {/* Search Bar directly below categories: Search input box above the "Can't find your product?" message */}
         <div
           id="product-search"
           className="mt-10 rounded-xl border border-silver bg-white p-5 sm:p-6 shadow-card"
         >
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <label
-              htmlFor="category-search-input"
-              className="text-sm sm:text-base font-bold text-navy"
-            >
-              Can&apos;t find your product? Search or tell us what you need.
-            </label>
+          <div className="mx-auto max-w-3xl space-y-4">
+            {/* Search Input Box (above message) */}
+            <div className="relative w-full">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-steel"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
+              <input
+                id="category-search-input"
+                type="search"
+                aria-label="Can't find your product? Search or tell us what you need."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search product categories (e.g., hoses, bolts, O-rings, abrasives, lifting, MS/SS)..."
+                className="h-12 w-full rounded-md border border-silver bg-steel-light/35 pl-10 pr-4 text-sm sm:text-base text-navy placeholder:text-steel focus:border-navy focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-accent"
+              />
+            </div>
 
-            <div className="flex flex-1 max-w-xl flex-col sm:flex-row items-stretch sm:items-center gap-3">
-              <div className="relative flex-1">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-steel"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <circle cx="11" cy="11" r="8" />
-                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                </svg>
-                <input
-                  id="category-search-input"
-                  type="search"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Filter categories (e.g., bolts, hoses, O-rings, MS/SS)..."
-                  className="h-11 w-full rounded-md border border-silver bg-steel-light/35 pl-10 pr-4 text-sm text-navy placeholder:text-steel focus:border-navy focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-accent"
-                />
-              </div>
+            {/* "Can't find your product?" message and action below the search input */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
+              <label
+                htmlFor="category-search-input"
+                className="text-sm sm:text-base font-bold text-navy"
+              >
+                Can&apos;t find your product? Search or tell us what you need.
+              </label>
               <Button href="/rfq" variant="primary" size="md" className="shrink-0">
                 Tell us what you need
               </Button>
