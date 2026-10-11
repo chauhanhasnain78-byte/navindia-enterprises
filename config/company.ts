@@ -14,6 +14,8 @@ export interface ProductCategory {
   shortTitle?: string;
   description: string;
   shapeType: CategoryShapeType;
+  /** Path to studio product image in /public/products/ */
+  imagePath: string;
   /** Path to .glb 3D model in /public/models/ */
   modelPath: string;
   keywords: string[];
@@ -113,6 +115,7 @@ export const companyConfig = {
       description:
         "Industrial hoses arranged to your required size and duty.",
       shapeType: "hose",
+      imagePath: "/products/hoses.jpg",
       modelPath: "/models/hoses.glb",
       keywords: ["hose", "hoses"],
     },
@@ -123,6 +126,7 @@ export const companyConfig = {
       description:
         "Fasteners arranged to your required size, grade, and specification.",
       shapeType: "fastener",
+      imagePath: "/products/fasteners.jpg",
       modelPath: "/models/fasteners.glb",
       keywords: [
         "fasteners",
@@ -140,6 +144,7 @@ export const companyConfig = {
       description:
         "O-rings and sealing products arranged to your dimensions and material.",
       shapeType: "seal",
+      imagePath: "/products/seals-and-o-rings.jpg",
       modelPath: "/models/seals-and-o-rings.glb",
       keywords: ["seals", "o-rings", "orings", "sealing"],
     },
@@ -150,6 +155,7 @@ export const companyConfig = {
       description:
         "Industrial abrasives arranged to your application and specification.",
       shapeType: "abrasive",
+      imagePath: "/products/abrasives.jpg",
       modelPath: "/models/abrasives.glb",
       keywords: ["abrasives", "abrasive"],
     },
@@ -160,6 +166,7 @@ export const companyConfig = {
       description:
         "Lifting-related products arranged to your specification.",
       shapeType: "lifting",
+      imagePath: "/products/lifting-products.jpg",
       modelPath: "/models/lifting-products.glb",
       keywords: ["lifting", "lifting products"],
     },
@@ -170,6 +177,7 @@ export const companyConfig = {
       description:
         "Mild steel and stainless steel industrial products arranged to your requirement.",
       shapeType: "metal",
+      imagePath: "/products/ms-ss-industrial-products.jpg",
       modelPath: "/models/ms-ss-industrial-products.glb",
       keywords: ["ms", "ss", "mild steel", "stainless steel"],
     },
@@ -180,6 +188,7 @@ export const companyConfig = {
       description:
         "Other industrial items arranged against your enquiry list.",
       shapeType: "general",
+      imagePath: "/products/other-industrial-supplies.jpg",
       modelPath: "/models/other-industrial-supplies.glb",
       keywords: ["other", "industrial", "supplies", "items"],
     },

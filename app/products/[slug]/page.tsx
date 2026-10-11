@@ -5,7 +5,6 @@ import { notFound } from "next/navigation";
 import { companyConfig } from "@/config/company";
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
-import { CategoryStaticIcon } from "@/components/cards/CategoryStaticIcon";
 
 interface CategoryPageProps {
   params: {
@@ -61,21 +60,21 @@ export default function ProductCategoryPlaceholderPage({
             </Link>
           </div>
 
-          <div className="mt-6 flex items-center gap-5">
-            <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-xl bg-steel-light/70 border border-silver/60">
-              <CategoryStaticIcon
-                shapeType={category.shapeType}
-                className="h-14 w-14"
-              />
-            </div>
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-navy">
-                {category.name}
-              </h1>
-              <p className="mt-1.5 text-sm sm:text-base text-steel">
-                {category.description}
-              </p>
-            </div>
+          <div className="mt-6 overflow-hidden rounded-xl border border-silver/60 bg-[#EDF1F5] h-52 sm:h-64 w-full">
+            <img
+              src={category.imagePath}
+              alt={category.name}
+              className="h-full w-full object-cover"
+            />
+          </div>
+
+          <div className="mt-6">
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-navy">
+              {category.name}
+            </h1>
+            <p className="mt-1.5 text-sm sm:text-base text-steel">
+              {category.description}
+            </p>
           </div>
 
           <div className="mt-6 rounded-xl border border-silver/70 bg-steel-light/30 p-4 text-sm text-steel leading-relaxed">
