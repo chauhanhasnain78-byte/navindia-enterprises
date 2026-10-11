@@ -1,17 +1,85 @@
 "use client";
 
-import React, { useMemo, useRef } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { CategoryShapeType } from "@/config/company";
 
 interface ShapeMeshProps {
   shapeType: CategoryShapeType;
+  modelPath?: string;
   isHovered: boolean;
 }
 
-function ProceduralIndustrialMesh({ shapeType, isHovered }: ShapeMeshProps) {
+// In-memory cache so each .glb model is fetched only once per page load
+const gltfCache = new Map<string, THREE.Group | null>();
+
+function normalizeAndCenterScene(rawScene: THREE.Group): THREE.Group {
+  const cloned = rawScene.clone(true);
+  const box = new THREE.Box3().setFromObject(cloned);
+  const size = new THREE.Vector3();
+  const center = new THREE.Vector3();
+  box.getSize(size);
+  box.getCenter(center);
+
+  const maxDim = Math.max(size.x, size.y, size.z);
+  const targetSize = 1.85;
+  const scaleFactor = maxDim > 0 ? targetSize / maxDim : 1;
+
+  // Center the model at origin and wrap in a normalized group
+  cloned.position.set(
+    -center.x * scaleFactor,
+    -center.y * scaleFactor,
+    -center.z * scaleFactor
+  );
+  cloned.scale.setScalar(scaleFactor);
+
+  const wrapper = new THREE.Group();
+  wrapper.add(cloned);
+  return wrapper;
+}
+
+function IndustrialModelOrProceduralMesh({
+  shapeType,
+  modelPath,
+  isHovered,
+}: ShapeMeshProps) {
   const groupRef = useRef<THREE.Group>(null);
+  const [loadedModel, setLoadedModel] = useState<THREE.Group | null>(null);
+
+  useEffect(() => {
+    if (!modelPath) return;
+    let isMounted = true;
+
+    if (gltfCache.has(modelPath)) {
+      const cached = gltfCache.get(modelPath);
+      if (cached && isMounted) {
+        setLoadedModel(normalizeAndCenterScene(cached));
+      }
+      return;
+    }
+
+    const loader = new GLTFLoader();
+    loader.load(
+      modelPath,
+      (gltf) => {
+        gltfCache.set(modelPath, gltf.scene);
+        if (isMounted) {
+          setLoadedModel(normalizeAndCenterScene(gltf.scene));
+        }
+      },
+      undefined,
+      () => {
+        // .glb file not placed in /public/models/ yet — keep procedural 3D shape
+        gltfCache.set(modelPath, null);
+      }
+    );
+
+    return () => {
+      isMounted = false;
+    };
+  }, [modelPath]);
 
   useFrame((_, delta) => {
     if (!groupRef.current) return;
@@ -19,12 +87,12 @@ function ProceduralIndustrialMesh({ shapeType, isHovered }: ShapeMeshProps) {
     groupRef.current.rotation.y += delta * speed;
     groupRef.current.rotation.x = THREE.MathUtils.lerp(
       groupRef.current.rotation.x,
-      isHovered ? 0.48 : 0.32,
+      isHovered ? 0.42 : 0.28,
       0.08
     );
   });
 
-  // Helical tube geometry for Hoses
+  // Helical tube geometry for Hoses fallback
   const hoseGeometry = useMemo(() => {
     if (shapeType !== "hose") return null;
     const points: THREE.Vector3[] = [];
@@ -77,15 +145,32 @@ function ProceduralIndustrialMesh({ shapeType, isHovered }: ShapeMeshProps) {
     []
   );
 
+  // If real .glb model exists in /public/models/, render it!
+  if (loadedModel) {
+    return (
+      <group ref={groupRef} rotation={[0.28, 0.4, 0]}>
+        <primitive object={loadedModel} />
+      </group>
+    );
+  }
+
   return (
     <group ref={groupRef} rotation={[0.32, 0.4, 0]}>
       {shapeType === "hose" && hoseGeometry && (
         <group>
           <mesh geometry={hoseGeometry} material={navyMaterial} />
-          <mesh position={[0.85, 0.55, 0]} rotation={[Math.PI / 2, 0, 0]} material={amberMaterial}>
+          <mesh
+            position={[0.85, 0.55, 0]}
+            rotation={[Math.PI / 2, 0, 0]}
+            material={amberMaterial}
+          >
             <cylinderGeometry args={[0.22, 0.22, 0.22, 16]} />
           </mesh>
-          <mesh position={[0.85, -0.55, 0]} rotation={[Math.PI / 2, 0, 0]} material={steelMaterial}>
+          <mesh
+            position={[0.85, -0.55, 0]}
+            rotation={[Math.PI / 2, 0, 0]}
+            material={steelMaterial}
+          >
             <cylinderGeometry args={[0.21, 0.21, 0.2, 16]} />
           </mesh>
         </group>
@@ -93,15 +178,12 @@ function ProceduralIndustrialMesh({ shapeType, isHovered }: ShapeMeshProps) {
 
       {shapeType === "fastener" && (
         <group>
-          {/* Hex Bolt Head */}
           <mesh position={[0, 0.68, 0]} material={navyMaterial}>
             <cylinderGeometry args={[0.68, 0.68, 0.38, 6]} />
           </mesh>
-          {/* Bolt Shaft */}
           <mesh position={[0, -0.15, 0]} material={steelMaterial}>
             <cylinderGeometry args={[0.32, 0.32, 1.35, 20]} />
           </mesh>
-          {/* Thread Rings */}
           {[-0.1, -0.32, -0.54, -0.72].map((yPos, idx) => (
             <mesh
               key={idx}
@@ -112,7 +194,6 @@ function ProceduralIndustrialMesh({ shapeType, isHovered }: ShapeMeshProps) {
               <torusGeometry args={[0.33, 0.04, 10, 24]} />
             </mesh>
           ))}
-          {/* Hex Nut */}
           <mesh position={[0, 0.12, 0]} material={amberMaterial}>
             <cylinderGeometry args={[0.56, 0.56, 0.28, 6]} />
           </mesh>
@@ -121,11 +202,9 @@ function ProceduralIndustrialMesh({ shapeType, isHovered }: ShapeMeshProps) {
 
       {shapeType === "seal" && (
         <group>
-          {/* Main Outer O-Ring Torus */}
           <mesh material={navyMaterial}>
             <torusGeometry args={[0.88, 0.24, 24, 48]} />
           </mesh>
-          {/* Secondary Inner Seal Ring */}
           <mesh rotation={[0.45, 0.2, 0]} material={amberMaterial}>
             <torusGeometry args={[0.48, 0.12, 18, 36]} />
           </mesh>
@@ -134,15 +213,12 @@ function ProceduralIndustrialMesh({ shapeType, isHovered }: ShapeMeshProps) {
 
       {shapeType === "abrasive" && (
         <group rotation={[Math.PI / 3, 0, 0]}>
-          {/* Main Grinding Disc */}
           <mesh material={navyMaterial}>
             <cylinderGeometry args={[1.05, 1.05, 0.16, 32]} />
           </mesh>
-          {/* Depressed Center Ring */}
           <mesh position={[0, 0.09, 0]} material={steelMaterial}>
             <cylinderGeometry args={[0.58, 0.65, 0.08, 28]} />
           </mesh>
-          {/* Center Bore Arbor Ring */}
           <mesh
             position={[0, 0.14, 0]}
             rotation={[Math.PI / 2, 0, 0]}
@@ -155,11 +231,9 @@ function ProceduralIndustrialMesh({ shapeType, isHovered }: ShapeMeshProps) {
 
       {shapeType === "lifting" && (
         <group>
-          {/* Shackle Bow */}
           <mesh position={[0, 0.15, 0]} material={navyMaterial}>
             <torusGeometry args={[0.72, 0.18, 20, 40, Math.PI * 1.35]} />
           </mesh>
-          {/* Shackle Pin */}
           <mesh
             position={[0, -0.45, 0]}
             rotation={[0, 0, Math.PI / 2]}
@@ -167,7 +241,6 @@ function ProceduralIndustrialMesh({ shapeType, isHovered }: ShapeMeshProps) {
           >
             <cylinderGeometry args={[0.16, 0.16, 1.65, 20]} />
           </mesh>
-          {/* Pin Collar */}
           <mesh
             position={[0.75, -0.45, 0]}
             rotation={[0, 0, Math.PI / 2]}
@@ -180,19 +253,15 @@ function ProceduralIndustrialMesh({ shapeType, isHovered }: ShapeMeshProps) {
 
       {shapeType === "metal" && (
         <group>
-          {/* Structural I-Beam Web */}
           <mesh material={steelMaterial}>
             <boxGeometry args={[0.22, 1.1, 1.35]} />
           </mesh>
-          {/* Top Flange */}
           <mesh position={[0, 0.58, 0]} material={navyMaterial}>
             <boxGeometry args={[1.15, 0.2, 1.35]} />
           </mesh>
-          {/* Bottom Flange */}
           <mesh position={[0, -0.58, 0]} material={navyMaterial}>
             <boxGeometry args={[1.15, 0.2, 1.35]} />
           </mesh>
-          {/* Accent Trim */}
           <mesh position={[0, 0.7, 0]} material={amberMaterial}>
             <boxGeometry args={[0.45, 0.05, 1.37]} />
           </mesh>
@@ -201,15 +270,12 @@ function ProceduralIndustrialMesh({ shapeType, isHovered }: ShapeMeshProps) {
 
       {shapeType === "general" && (
         <group>
-          {/* Precision Industrial Hex Block */}
           <mesh material={navyMaterial}>
             <cylinderGeometry args={[0.82, 0.82, 0.55, 6]} />
           </mesh>
-          {/* Inner Machined Sleeve */}
           <mesh material={steelMaterial}>
             <cylinderGeometry args={[0.48, 0.48, 0.85, 24]} />
           </mesh>
-          {/* Accent Collar */}
           <mesh
             position={[0, 0.32, 0]}
             rotation={[Math.PI / 2, 0, 0]}
@@ -225,11 +291,13 @@ function ProceduralIndustrialMesh({ shapeType, isHovered }: ShapeMeshProps) {
 
 interface Category3DSceneProps {
   shapeType: CategoryShapeType;
+  modelPath?: string;
   isHovered: boolean;
 }
 
 export default function Category3DScene({
   shapeType,
+  modelPath,
   isHovered,
 }: Category3DSceneProps) {
   return (
@@ -244,10 +312,14 @@ export default function Category3DScene({
         touchAction: "pan-x pan-y",
       }}
     >
-      <ambientLight intensity={1.1} />
-      <directionalLight position={[4, 6, 5]} intensity={1.6} />
-      <directionalLight position={[-3, -3, 2]} intensity={0.6} />
-      <ProceduralIndustrialMesh shapeType={shapeType} isHovered={isHovered} />
+      <ambientLight intensity={1.3} />
+      <directionalLight position={[4, 6, 5]} intensity={1.8} />
+      <directionalLight position={[-3, -3, 2]} intensity={0.8} />
+      <IndustrialModelOrProceduralMesh
+        shapeType={shapeType}
+        modelPath={modelPath}
+        isHovered={isHovered}
+      />
     </Canvas>
   );
 }

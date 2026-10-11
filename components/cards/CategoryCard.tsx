@@ -137,6 +137,7 @@ export function CategoryCard({
               <CanvasErrorBoundary fallback={staticFallback}>
                 <Category3DScene
                   shapeType={category.shapeType}
+                  modelPath={category.modelPath}
                   isHovered={isHovered}
                 />
               </CanvasErrorBoundary>

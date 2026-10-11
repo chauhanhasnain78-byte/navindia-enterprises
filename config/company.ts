@@ -14,6 +14,8 @@ export interface ProductCategory {
   shortTitle?: string;
   description: string;
   shapeType: CategoryShapeType;
+  /** Path to .glb 3D model in /public/models/ */
+  modelPath: string;
   keywords: string[];
 }
 
@@ -111,6 +113,7 @@ export const companyConfig = {
       description:
         "Industrial hoses arranged to your required size and duty.",
       shapeType: "hose",
+      modelPath: "/models/hoses.glb",
       keywords: ["hose", "hoses"],
     },
     {
@@ -120,6 +123,7 @@ export const companyConfig = {
       description:
         "Fasteners arranged to your required size, grade, and specification.",
       shapeType: "fastener",
+      modelPath: "/models/fasteners.glb",
       keywords: [
         "fasteners",
         "bolts",
@@ -136,6 +140,7 @@ export const companyConfig = {
       description:
         "O-rings and sealing products arranged to your dimensions and material.",
       shapeType: "seal",
+      modelPath: "/models/seals-and-o-rings.glb",
       keywords: ["seals", "o-rings", "orings", "sealing"],
     },
     {
@@ -145,6 +150,7 @@ export const companyConfig = {
       description:
         "Industrial abrasives arranged to your application and specification.",
       shapeType: "abrasive",
+      modelPath: "/models/abrasives.glb",
       keywords: ["abrasives", "abrasive"],
     },
     {
@@ -154,6 +160,7 @@ export const companyConfig = {
       description:
         "Lifting-related products arranged to your specification.",
       shapeType: "lifting",
+      modelPath: "/models/lifting-products.glb",
       keywords: ["lifting", "lifting products"],
     },
     {
@@ -163,6 +170,7 @@ export const companyConfig = {
       description:
         "Mild steel and stainless steel industrial products arranged to your requirement.",
       shapeType: "metal",
+      modelPath: "/models/ms-ss-industrial-products.glb",
       keywords: ["ms", "ss", "mild steel", "stainless steel"],
     },
     {
@@ -172,6 +180,7 @@ export const companyConfig = {
       description:
         "Other industrial items arranged against your enquiry list.",
       shapeType: "general",
+      modelPath: "/models/other-industrial-supplies.glb",
       keywords: ["other", "industrial", "supplies", "items"],
     },
   ] as ProductCategory[],
