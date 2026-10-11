@@ -3,6 +3,7 @@
 import React, { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { companyConfig } from "@/config/company";
+import { catalogProducts } from "@/data/catalog";
 import { Container } from "@/components/ui/Container";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { CategoryCard } from "@/components/cards/CategoryCard";
@@ -20,7 +21,15 @@ export function ProductCategoriesSection() {
       const inKeywords = cat.keywords.some((k) =>
         k.toLowerCase().includes(query)
       );
-      return inName || inDesc || inKeywords;
+      const inProducts = catalogProducts
+        .filter((p) => p.categorySlug === cat.slug)
+        .some(
+          (p) =>
+            p.name.toLowerCase().includes(query) ||
+            p.summary.toLowerCase().includes(query) ||
+            p.standards.some((s) => s.toLowerCase().includes(query))
+        );
+      return inName || inDesc || inKeywords || inProducts;
     });
   }, [searchQuery]);
 
@@ -33,15 +42,14 @@ export function ProductCategoriesSection() {
         <SectionHeading
           eyebrow="Product Categories"
           title="Industrial Supplies Arranged to Your Specification"
-          subtitle="Browse our core industrial product groups or search below to send us your custom requirement."
+          subtitle="Browse our 9 core industrial product groups or search below to send us your custom requirement."
         />
 
-        {/* Categories: 2 side-by-side on mobile & tablet, 4 per row on desktop */}
+        {/* Categories: 3 per row on large screens (9 cards), 2 on tablet/mobile */}
         {filteredCategories.length > 0 ? (
-          <div className="mt-10 grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+          <div className="mt-10 grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
             {filteredCategories.map((category, index) => {
-              // If odd total on mobile/tablet (e.g. 7 categories), let the last card span 2 columns in landscape style on mobile so the grid is completely balanced
-              const isLastOddCard =
+              const isLastOddCardOnMobile =
                 filteredCategories.length % 2 === 1 &&
                 index === filteredCategories.length - 1;
 
@@ -53,12 +61,12 @@ export function ProductCategoriesSection() {
                   viewport={{ once: true, margin: "-40px" }}
                   transition={{
                     duration: 0.4,
-                    delay: Math.min(index * 0.06, 0.3),
+                    delay: Math.min(index * 0.05, 0.3),
                     ease: [0.22, 1, 0.36, 1],
                   }}
                   style={{ willChange: "transform, opacity" }}
                   className={
-                    isLastOddCard
+                    isLastOddCardOnMobile
                       ? "col-span-2 lg:col-span-1 h-full"
                       : "col-span-1 h-full"
                   }
@@ -128,7 +136,7 @@ export function ProductCategoriesSection() {
                 aria-label="Can't find your product? Search or tell us what you need."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search product categories (e.g., hoses, fasteners, seals, abrasives, lifting, clamps, bearings, MS/SS)..."
+                placeholder="Search products or categories (e.g., hydraulic hoses, hex bolts, O-rings, clamps, bearings, valves)..."
                 className="h-12 w-full rounded-md border border-silver bg-steel-light/35 pl-10 pr-4 text-sm sm:text-base text-navy placeholder:text-steel focus:border-navy focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-accent"
               />
             </div>

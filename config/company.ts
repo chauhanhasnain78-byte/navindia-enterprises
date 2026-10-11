@@ -9,6 +9,9 @@ export type CategoryShapeType =
   | "metal"
   | "general";
 
+export type ManufacturingStatus =
+  | "Manufactured in-house"
+  | "Arranged to your specification";
 
 export interface ProductCategory {
   id: string;
@@ -17,11 +20,14 @@ export interface ProductCategory {
   shortTitle?: string;
   description: string;
   shapeType: CategoryShapeType;
-  /** Path to studio product image in /public/products/ */
+  manufacturingStatus: ManufacturingStatus;
+  origin: string;
+  /** Path to studio category image in /public/products/ */
   imagePath: string;
   /** Path to .glb 3D model in /public/models/ */
   modelPath: string;
   keywords: string[];
+  relatedCategorySlugs: string[];
 }
 
 export interface WorkStep {
@@ -46,8 +52,22 @@ export interface HighlightedCountry {
   labelOffset: { dx: number; dy: number };
 }
 
+export interface TrustConfig {
+  defaultOrigin: string;
+  inspectionNote: string;
+  indicativeSpecNotice: string;
+  illustrativeImageNotice: string;
+  standardsHeading: string;
+  confirmedDocuments: string[];
+  pendingDocuments: string[];
+  /** Set to true only when pendingDocuments should be displayed publicly */
+  showPending: boolean;
+  destinationSuggestions: string[];
+}
+
 export const companyConfig = {
   name: "NAV INDIA ENTERPRISES",
+  siteUrl: "https://navindiaenterprises.com",
   tagline: "You Specify. We Source. We Supply.",
   heroSupportingLine:
     "Industrial products arranged to your specification and supplied worldwide.",
@@ -75,9 +95,37 @@ export const companyConfig = {
   },
   registrationPlaceholder:
     "[Placeholder: GST / IEC / Registration & Certification Details — To Be Added]",
+  trust: {
+    defaultOrigin: "Assembled in India",
+    inspectionNote: "Inspection can be arranged",
+    indicativeSpecNotice:
+      "Specifications are indicative. Final specification is confirmed in your quotation.",
+    illustrativeImageNotice: "Illustrative image. Actual product may vary.",
+    standardsHeading: "Standards (as per your requirement)",
+    confirmedDocuments: [
+      "Commercial Invoice",
+      "Packing List",
+      "Certificate of Origin (where applicable)",
+    ],
+    pendingDocuments: [
+      "Material Test Certificate (MTC)",
+      "Test Certificate",
+      "Inspection Report",
+    ],
+    showPending: false,
+    destinationSuggestions: [
+      "UAE",
+      "Qatar",
+      "Bahrain",
+      "Saudi Arabia",
+      "Oman",
+      "Kuwait",
+      "Other",
+    ],
+  } as TrustConfig,
   navigation: [
     { label: "Home", href: "/" },
-    { label: "Products", href: "/#products" },
+    { label: "Products", href: "/products" },
     { label: "How We Work", href: "/#how-we-work" },
     { label: "About", href: "/about" },
     { label: "Contact", href: "/contact" },
@@ -112,23 +160,38 @@ export const companyConfig = {
   worldSupplyNote: "Tell us your country, we will confirm.",
   categories: [
     {
-      id: "industrial-hoses",
+      id: "hoses",
       slug: "hoses",
       name: "Industrial Hoses (Pipes & Tubes)",
       description:
-        "Industrial hoses, pipes, and tubes arranged to your required size and duty.",
+        "Industrial hoses, pipes, and tubes manufactured in-house to your required bore size, working pressure, and duty.",
       shapeType: "hose",
+      manufacturingStatus: "Manufactured in-house",
+      origin: "Assembled in India",
       imagePath: "/products/hoses.jpg",
       modelPath: "/models/hoses.glb",
-      keywords: ["hose", "hoses", "industrial hoses", "pipes", "tubes"],
+      keywords: [
+        "hose",
+        "hoses",
+        "industrial hoses",
+        "pipes",
+        "tubes",
+        "hydraulic hose",
+        "oil hose",
+        "chemical hose",
+        "steam hose",
+      ],
+      relatedCategorySlugs: ["clamps", "fasteners", "seals-o-rings"],
     },
     {
       id: "fasteners",
       slug: "fasteners",
       name: "Fasteners (Bolts, Nuts & Studs)",
       description:
-        "Fasteners including bolts, nuts, and studs arranged to your required size, grade, and specification.",
+        "Industrial bolts, nuts, studs, washers, and eye bolts manufactured in-house to your required size, thread, and grade.",
       shapeType: "fastener",
+      manufacturingStatus: "Manufactured in-house",
+      origin: "Assembled in India",
       imagePath: "/products/fasteners.jpg",
       modelPath: "/models/fasteners.glb",
       keywords: [
@@ -138,43 +201,70 @@ export const companyConfig = {
         "studs",
         "washers",
         "eye bolts",
+        "hex bolts",
+        "allen bolts",
+        "anchor bolts",
+        "u-bolts",
+      ],
+      relatedCategorySlugs: [
+        "seals-o-rings",
+        "lifting-rigging",
+        "other-supplies",
       ],
     },
     {
-      id: "seals-and-o-rings",
-      slug: "seals-and-o-rings",
+      id: "seals-o-rings",
+      slug: "seals-o-rings",
       name: "Seals & O-Rings",
       description:
-        "O-rings and sealing products arranged to your dimensions and material.",
+        "O-rings, rotary shaft seals, hydraulic seals, mechanical seals, and gaskets arranged to your dimensions and material.",
       shapeType: "seal",
+      manufacturingStatus: "Arranged to your specification",
+      origin: "Assembled in India",
       imagePath: "/products/seals-and-o-rings.jpg",
       modelPath: "/models/seals-and-o-rings.glb",
-      keywords: ["seals", "o-rings", "orings", "sealing", "gaskets"],
+      keywords: [
+        "seals",
+        "o-rings",
+        "orings",
+        "oil seals",
+        "mechanical seals",
+        "hydraulic seals",
+        "gaskets",
+      ],
+      relatedCategorySlugs: ["fasteners", "hoses", "bearings"],
     },
     {
       id: "abrasives",
       slug: "abrasives",
       name: "Abrasives (Grinding Wheels & Discs)",
       description:
-        "Grinding wheels, cutting discs, and industrial abrasives arranged to your application and specification.",
+        "Bonded grinding wheels, cutting discs, coated flap discs, and superabrasive tools arranged to your specification.",
       shapeType: "abrasive",
+      manufacturingStatus: "Arranged to your specification",
+      origin: "Assembled in India",
       imagePath: "/products/abrasives.jpg",
       modelPath: "/models/abrasives.glb",
       keywords: [
         "abrasives",
-        "abrasive",
         "grinding wheels",
-        "discs",
+        "cutting discs",
         "flap discs",
+        "sandpaper",
+        "emery cloth",
+        "diamond tools",
       ],
+      relatedCategorySlugs: ["other-supplies", "ms-ss-products"],
     },
     {
-      id: "lifting-products",
-      slug: "lifting-products",
+      id: "lifting-rigging",
+      slug: "lifting-rigging",
       name: "Lifting & Rigging Products (Slings, Chains & Shackles)",
       description:
-        "Slings, chains, shackles, and lifting products arranged to your specification.",
+        "Wire rope slings, chain slings, webbing slings, shackles, hooks, turnbuckles, and hoists arranged to your specification.",
       shapeType: "lifting",
+      manufacturingStatus: "Arranged to your specification",
+      origin: "Assembled in India",
       imagePath: "/products/lifting-products.jpg",
       modelPath: "/models/lifting-products.glb",
       keywords: [
@@ -183,16 +273,21 @@ export const companyConfig = {
         "slings",
         "chains",
         "shackles",
-        "lifting products",
+        "hooks",
+        "turnbuckles",
+        "hoists",
       ],
+      relatedCategorySlugs: ["fasteners", "clamps"],
     },
     {
-      id: "industrial-clamps",
-      slug: "industrial-clamps",
+      id: "clamps",
+      slug: "clamps",
       name: "Industrial Clamps",
       description:
-        "Heavy-duty hose, pipe, and mounting clamps arranged to your required size and material.",
+        "Worm-drive, T-bolt, ear hose clamps, and heavy-duty pipe mounting clamps arranged to your required size and grade.",
       shapeType: "clamp",
+      manufacturingStatus: "Arranged to your specification",
+      origin: "Assembled in India",
       imagePath: "/products/industrial-clamps.jpg",
       modelPath: "/models/industrial-clamps.glb",
       keywords: [
@@ -200,47 +295,76 @@ export const companyConfig = {
         "industrial clamps",
         "hose clamps",
         "pipe clamps",
-        "u-bolt clamps",
-        "t-bolt clamps",
+        "t-bolt",
+        "jubilee",
+        "u-clamp",
       ],
+      relatedCategorySlugs: ["hoses", "fasteners"],
     },
     {
       id: "bearings",
       slug: "bearings",
       name: "Bearings (Roller & Ball Bearings)",
       description:
-        "Roller bearings and ball bearings arranged to your required series, dimensions, and specification.",
+        "Ball bearings, roller bearings, thrust bearings, and pillow block units arranged to your required series and dimensions.",
       shapeType: "bearing",
+      manufacturingStatus: "Arranged to your specification",
+      origin: "Assembled in India",
       imagePath: "/products/bearings.jpg",
       modelPath: "/models/bearings.glb",
       keywords: [
         "bearings",
         "roller bearings",
         "ball bearings",
-        "bearing",
+        "pillow block",
+        "tapered roller",
+        "spherical roller",
       ],
+      relatedCategorySlugs: ["seals-o-rings", "fasteners"],
     },
     {
-      id: "ms-ss-industrial-products",
-      slug: "ms-ss-industrial-products",
+      id: "ms-ss-products",
+      slug: "ms-ss-products",
       name: "MS/SS Industrial Products",
       description:
-        "Mild steel and stainless steel industrial products arranged to your requirement.",
+        "Mild steel and stainless steel industrial products arranged to your requirement and technical specification.",
       shapeType: "metal",
+      manufacturingStatus: "Arranged to your specification",
+      origin: "Assembled in India",
       imagePath: "/products/ms-ss-industrial-products.jpg",
       modelPath: "/models/ms-ss-industrial-products.glb",
-      keywords: ["ms", "ss", "mild steel", "stainless steel", "flanges", "fittings"],
+      keywords: [
+        "ms",
+        "ss",
+        "mild steel",
+        "stainless steel",
+        "ss304",
+        "ss316",
+      ],
+      relatedCategorySlugs: ["fasteners", "other-supplies"],
     },
     {
-      id: "other-industrial-supplies",
-      slug: "other-industrial-supplies",
+      id: "other-supplies",
+      slug: "other-supplies",
       name: "Other Industrial Supplies",
       description:
-        "Other industrial items arranged against your enquiry list.",
+        "Industrial valves and custom specification items arranged against your project enquiry list.",
       shapeType: "general",
+      manufacturingStatus: "Arranged to your specification",
+      origin: "Assembled in India",
       imagePath: "/products/other-industrial-supplies.jpg",
       modelPath: "/models/other-industrial-supplies.glb",
-      keywords: ["other", "industrial", "supplies", "items"],
+      keywords: [
+        "other",
+        "industrial",
+        "supplies",
+        "items",
+        "valves",
+        "gate valve",
+        "ball valve",
+        "custom",
+      ],
+      relatedCategorySlugs: ["fasteners", "hoses"],
     },
   ] as ProductCategory[],
   howWeWorkSteps: [
@@ -278,7 +402,8 @@ export const companyConfig = {
   whyBuyersWorkWithUs: [
     {
       id: "capability",
-      title: "Manufacturing and supply capability, built around your specification",
+      title:
+        "Manufacturing and supply capability, built around your specification",
       description:
         "Products are arranged strictly around your technical drawings, material grades, and application requirements.",
       iconName: "capability",
