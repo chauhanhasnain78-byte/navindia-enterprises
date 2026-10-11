@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { CategoryShapeType } from "@/config/company";
 
 interface ShapeMeshProps {
@@ -12,8 +13,31 @@ interface ShapeMeshProps {
   isHovered: boolean;
 }
 
-// In-memory cache so each .glb model is fetched only once per page load
 const gltfCache = new Map<string, THREE.Group | null>();
+
+/**
+ * Sets up a real PBR Studio RoomEnvironment on the Three.js scene
+ * so metallic surfaces (stainless steel, brass, alloy steel) look like real metal.
+ */
+function StudioEnvironment() {
+  const { gl, scene } = useThree();
+
+  useEffect(() => {
+    const pmremGenerator = new THREE.PMREMGenerator(gl);
+    pmremGenerator.compileEquirectangularShader();
+    const envScene = new RoomEnvironment();
+    const envMap = pmremGenerator.fromScene(envScene, 0.04).texture;
+    scene.environment = envMap;
+
+    return () => {
+      scene.environment = null;
+      envMap.dispose();
+      pmremGenerator.dispose();
+    };
+  }, [gl, scene]);
+
+  return null;
+}
 
 function normalizeAndCenterScene(rawScene: THREE.Group): THREE.Group {
   const cloned = rawScene.clone(true);
@@ -27,7 +51,6 @@ function normalizeAndCenterScene(rawScene: THREE.Group): THREE.Group {
   const targetSize = 1.85;
   const scaleFactor = maxDim > 0 ? targetSize / maxDim : 1;
 
-  // Center the model at origin and wrap in a normalized group
   cloned.position.set(
     -center.x * scaleFactor,
     -center.y * scaleFactor,
@@ -71,7 +94,6 @@ function IndustrialModelOrProceduralMesh({
       },
       undefined,
       () => {
-        // .glb file not placed in /public/models/ yet — keep procedural 3D shape
         gltfCache.set(modelPath, null);
       }
     );
@@ -81,9 +103,10 @@ function IndustrialModelOrProceduralMesh({
     };
   }, [modelPath]);
 
+  // Continuous 360-degree rotation
   useFrame((_, delta) => {
     if (!groupRef.current) return;
-    const speed = isHovered ? 1.15 : 0.45;
+    const speed = isHovered ? 1.35 : 0.65;
     groupRef.current.rotation.y += delta * speed;
     groupRef.current.rotation.x = THREE.MathUtils.lerp(
       groupRef.current.rotation.x,
@@ -92,17 +115,17 @@ function IndustrialModelOrProceduralMesh({
     );
   });
 
-  // Helical tube geometry for Hoses fallback
+  // Helical coiled hydraulic hose geometry
   const hoseGeometry = useMemo(() => {
     if (shapeType !== "hose") return null;
     const points: THREE.Vector3[] = [];
-    const turns = 2.6;
-    const radius = 0.85;
-    const segments = 64;
+    const turns = 3.5;
+    const radius = 0.82;
+    const segments = 96;
     for (let i = 0; i <= segments; i++) {
       const t = i / segments;
       const angle = t * Math.PI * 2 * turns;
-      const height = (t - 0.5) * 1.1;
+      const height = (t - 0.5) * 0.95;
       points.push(
         new THREE.Vector3(
           Math.cos(angle) * radius,
@@ -112,40 +135,80 @@ function IndustrialModelOrProceduralMesh({
       );
     }
     const curve = new THREE.CatmullRomCurve3(points);
-    return new THREE.TubeGeometry(curve, 64, 0.17, 16, false);
+    return new THREE.TubeGeometry(curve, 96, 0.145, 20, false);
   }, [shapeType]);
 
-  const navyMaterial = useMemo(
+  // Realistic PBR Materials
+  const stainlessSteelMat = useMemo(
     () =>
       new THREE.MeshStandardMaterial({
-        color: "#0B1F3A",
-        metalness: 0.55,
-        roughness: 0.35,
+        color: "#E2E8F0",
+        metalness: 0.9,
+        roughness: 0.18,
       }),
     []
   );
 
-  const steelMaterial = useMemo(
+  const forgedGunmetalMat = useMemo(
     () =>
       new THREE.MeshStandardMaterial({
-        color: "#8A99AD",
-        metalness: 0.7,
+        color: "#64748B",
+        metalness: 0.82,
         roughness: 0.28,
       }),
     []
   );
 
-  const amberMaterial = useMemo(
+  const machinedBrassMat = useMemo(
     () =>
       new THREE.MeshStandardMaterial({
-        color: "#F5A524",
-        metalness: 0.35,
-        roughness: 0.3,
+        color: "#E5B84B",
+        metalness: 0.86,
+        roughness: 0.2,
       }),
     []
   );
 
-  // If real .glb model exists in /public/models/, render it!
+  const rubberMat = useMemo(
+    () =>
+      new THREE.MeshStandardMaterial({
+        color: "#22262C",
+        metalness: 0.08,
+        roughness: 0.42,
+      }),
+    []
+  );
+
+  const abrasiveStoneMat = useMemo(
+    () =>
+      new THREE.MeshStandardMaterial({
+        color: "#363B42",
+        metalness: 0.18,
+        roughness: 0.78,
+      }),
+    []
+  );
+
+  const flapBlueMat = useMemo(
+    () =>
+      new THREE.MeshStandardMaterial({
+        color: "#1F6E8C",
+        metalness: 0.15,
+        roughness: 0.55,
+      }),
+    []
+  );
+
+  const safetyAmberMat = useMemo(
+    () =>
+      new THREE.MeshStandardMaterial({
+        color: "#F5A524",
+        metalness: 0.25,
+        roughness: 0.28,
+      }),
+    []
+  );
+
   if (loadedModel) {
     return (
       <group ref={groupRef} rotation={[0.28, 0.4, 0]}>
@@ -155,133 +218,293 @@ function IndustrialModelOrProceduralMesh({
   }
 
   return (
-    <group ref={groupRef} rotation={[0.32, 0.4, 0]}>
+    <group ref={groupRef} rotation={[0.28, 0.5, 0]}>
+      {/* 1. HOSES: Coiled Rubber Hydraulic Hose with Crimped SS Ferrules & Brass Hex Couplings */}
       {shapeType === "hose" && hoseGeometry && (
         <group>
-          <mesh geometry={hoseGeometry} material={navyMaterial} />
-          <mesh
-            position={[0.85, 0.55, 0]}
-            rotation={[Math.PI / 2, 0, 0]}
-            material={amberMaterial}
-          >
-            <cylinderGeometry args={[0.22, 0.22, 0.22, 16]} />
-          </mesh>
-          <mesh
-            position={[0.85, -0.55, 0]}
-            rotation={[Math.PI / 2, 0, 0]}
-            material={steelMaterial}
-          >
-            <cylinderGeometry args={[0.21, 0.21, 0.2, 16]} />
-          </mesh>
+          <mesh geometry={hoseGeometry} material={rubberMat} />
+          {/* Top End Coupling: SS Crimp Ferrule + Brass Hex Nut + Threaded Nipple */}
+          <group position={[0.82, 0.475, 0]} rotation={[Math.PI / 2, 0, 0]}>
+            <mesh position={[0, 0.05, 0]} material={stainlessSteelMat}>
+              <cylinderGeometry args={[0.175, 0.175, 0.24, 20]} />
+            </mesh>
+            <mesh position={[0, 0.22, 0]} material={machinedBrassMat}>
+              <cylinderGeometry args={[0.21, 0.21, 0.16, 6]} />
+            </mesh>
+            <mesh position={[0, 0.35, 0]} material={machinedBrassMat}>
+              <cylinderGeometry args={[0.14, 0.14, 0.14, 20]} />
+            </mesh>
+          </group>
+          {/* Bottom End Coupling */}
+          <group position={[0.82, -0.475, 0]} rotation={[Math.PI / 2, 0, 0]}>
+            <mesh position={[0, -0.05, 0]} material={stainlessSteelMat}>
+              <cylinderGeometry args={[0.175, 0.175, 0.24, 20]} />
+            </mesh>
+            <mesh position={[0, -0.22, 0]} material={machinedBrassMat}>
+              <cylinderGeometry args={[0.21, 0.21, 0.16, 6]} />
+            </mesh>
+            <mesh position={[0, -0.35, 0]} material={stainlessSteelMat}>
+              <cylinderGeometry args={[0.14, 0.14, 0.14, 20]} />
+            </mesh>
+          </group>
         </group>
       )}
 
+      {/* 2. FASTENERS: Stainless Hex Bolt + Nut + Washer + Forged Eye Bolt */}
       {shapeType === "fastener" && (
         <group>
-          <mesh position={[0, 0.68, 0]} material={navyMaterial}>
-            <cylinderGeometry args={[0.68, 0.68, 0.38, 6]} />
-          </mesh>
-          <mesh position={[0, -0.15, 0]} material={steelMaterial}>
-            <cylinderGeometry args={[0.32, 0.32, 1.35, 20]} />
-          </mesh>
-          {[-0.1, -0.32, -0.54, -0.72].map((yPos, idx) => (
-            <mesh
-              key={idx}
-              position={[0, yPos, 0]}
-              rotation={[Math.PI / 2, 0, 0]}
-              material={navyMaterial}
-            >
-              <torusGeometry args={[0.33, 0.04, 10, 24]} />
+          {/* Left: Stainless Steel Hex Bolt + Washer + Brass Hex Nut */}
+          <group position={[-0.42, 0.05, 0]}>
+            {/* Hex Head */}
+            <mesh position={[0, 0.68, 0]} material={stainlessSteelMat}>
+              <cylinderGeometry args={[0.46, 0.46, 0.28, 6]} />
             </mesh>
-          ))}
-          <mesh position={[0, 0.12, 0]} material={amberMaterial}>
-            <cylinderGeometry args={[0.56, 0.56, 0.28, 6]} />
-          </mesh>
+            {/* Flange Washer under head */}
+            <mesh position={[0, 0.52, 0]} material={stainlessSteelMat}>
+              <cylinderGeometry args={[0.5, 0.5, 0.05, 28]} />
+            </mesh>
+            {/* Bolt Shank */}
+            <mesh position={[0, -0.1, 0]} material={stainlessSteelMat}>
+              <cylinderGeometry args={[0.22, 0.22, 1.25, 24]} />
+            </mesh>
+            {/* Precision Thread Ridges */}
+            {[-0.02, -0.14, -0.26, -0.38, -0.5, -0.62].map((yPos, idx) => (
+              <mesh
+                key={idx}
+                position={[0, yPos, 0]}
+                rotation={[Math.PI / 2, 0, 0]}
+                material={forgedGunmetalMat}
+              >
+                <torusGeometry args={[0.225, 0.028, 12, 24]} />
+              </mesh>
+            ))}
+            {/* Threaded Hex Nut */}
+            <mesh position={[0, 0.12, 0]} material={machinedBrassMat}>
+              <cylinderGeometry args={[0.42, 0.42, 0.24, 6]} />
+            </mesh>
+          </group>
+
+          {/* Right: Forged Steel Lifting Eye Bolt */}
+          <group position={[0.48, -0.05, 0]}>
+            {/* Eye Ring */}
+            <mesh position={[0, 0.48, 0]} material={forgedGunmetalMat}>
+              <torusGeometry args={[0.32, 0.11, 20, 36]} />
+            </mesh>
+            {/* Shoulder Collar */}
+            <mesh position={[0, 0.1, 0]} material={forgedGunmetalMat}>
+              <cylinderGeometry args={[0.24, 0.18, 0.18, 24]} />
+            </mesh>
+            {/* Threaded Stem */}
+            <mesh position={[0, -0.38, 0]} material={stainlessSteelMat}>
+              <cylinderGeometry args={[0.14, 0.14, 0.8, 20]} />
+            </mesh>
+            {[-0.15, -0.28, -0.41, -0.54, -0.67].map((yPos, idx) => (
+              <mesh
+                key={idx}
+                position={[0, yPos, 0]}
+                rotation={[Math.PI / 2, 0, 0]}
+                material={forgedGunmetalMat}
+              >
+                <torusGeometry args={[0.145, 0.02, 10, 20]} />
+              </mesh>
+            ))}
+          </group>
         </group>
       )}
 
+      {/* 3. SEALS & O-RINGS: Precision Elastomer O-Rings & Metallic Radial Shaft Seal */}
       {shapeType === "seal" && (
         <group>
-          <mesh material={navyMaterial}>
-            <torusGeometry args={[0.88, 0.24, 24, 48]} />
+          {/* Large Nitrile O-Ring */}
+          <mesh position={[-0.15, 0.08, -0.1]} material={rubberMat}>
+            <torusGeometry args={[0.78, 0.18, 28, 56]} />
           </mesh>
-          <mesh rotation={[0.45, 0.2, 0]} material={amberMaterial}>
-            <torusGeometry args={[0.48, 0.12, 18, 36]} />
-          </mesh>
+          {/* Metallic Cased Radial Shaft Seal */}
+          <group position={[0.35, -0.18, 0.22]} rotation={[0.35, -0.25, 0]}>
+            <mesh material={stainlessSteelMat}>
+              <cylinderGeometry args={[0.56, 0.56, 0.18, 36, 1, true]} />
+            </mesh>
+            <mesh rotation={[Math.PI / 2, 0, 0]} material={rubberMat}>
+              <torusGeometry args={[0.46, 0.1, 20, 40]} />
+            </mesh>
+            <mesh rotation={[Math.PI / 2, 0, 0]} material={machinedBrassMat}>
+              <torusGeometry args={[0.34, 0.035, 16, 36]} />
+            </mesh>
+          </group>
         </group>
       )}
 
+      {/* 4. ABRASIVES: Industrial Grinding Wheel + Zirconium Flap Disc with SS Arbor Hub */}
       {shapeType === "abrasive" && (
-        <group rotation={[Math.PI / 3, 0, 0]}>
-          <mesh material={navyMaterial}>
-            <cylinderGeometry args={[1.05, 1.05, 0.16, 32]} />
+        <group rotation={[Math.PI / 3.2, 0, 0]}>
+          {/* Main Depressed-Center Grinding Disc */}
+          <mesh position={[0, -0.06, 0]} material={abrasiveStoneMat}>
+            <cylinderGeometry args={[1.05, 1.05, 0.14, 40]} />
           </mesh>
-          <mesh position={[0, 0.09, 0]} material={steelMaterial}>
-            <cylinderGeometry args={[0.58, 0.65, 0.08, 28]} />
+          {/* Radial Zirconium Abrasive Flaps */}
+          {Array.from({ length: 16 }).map((_, idx) => {
+            const angle = (idx / 16) * Math.PI * 2;
+            return (
+              <mesh
+                key={idx}
+                position={[Math.cos(angle) * 0.72, 0.04, Math.sin(angle) * 0.72]}
+                rotation={[0, -angle, 0.18]}
+                material={flapBlueMat}
+              >
+                <boxGeometry args={[0.42, 0.04, 0.22]} />
+              </mesh>
+            );
+          })}
+          {/* Depressed Steel Hub */}
+          <mesh position={[0, 0.05, 0]} material={forgedGunmetalMat}>
+            <cylinderGeometry args={[0.48, 0.54, 0.08, 32]} />
           </mesh>
+          {/* Stainless Steel Center Bore Ring */}
           <mesh
-            position={[0, 0.14, 0]}
+            position={[0, 0.1, 0]}
             rotation={[Math.PI / 2, 0, 0]}
-            material={amberMaterial}
+            material={stainlessSteelMat}
           >
-            <torusGeometry args={[0.28, 0.07, 12, 24]} />
+            <torusGeometry args={[0.28, 0.06, 16, 32]} />
           </mesh>
         </group>
       )}
 
+      {/* 5. LIFTING PRODUCTS: Forged Alloy Omega Bow Shackle with Threaded Pin & Collar */}
       {shapeType === "lifting" && (
-        <group>
-          <mesh position={[0, 0.15, 0]} material={navyMaterial}>
-            <torusGeometry args={[0.72, 0.18, 20, 40, Math.PI * 1.35]} />
-          </mesh>
+        <group position={[0, 0.05, 0]}>
+          {/* Omega Shackle Bow */}
           <mesh
-            position={[0, -0.45, 0]}
-            rotation={[0, 0, Math.PI / 2]}
-            material={amberMaterial}
+            position={[0, 0.18, 0]}
+            rotation={[0, 0, 0.24]}
+            material={forgedGunmetalMat}
           >
-            <cylinderGeometry args={[0.16, 0.16, 1.65, 20]} />
+            <torusGeometry args={[0.68, 0.17, 24, 48, Math.PI * 1.35]} />
           </mesh>
+          {/* Left Shackle Ear */}
           <mesh
-            position={[0.75, -0.45, 0]}
+            position={[-0.58, -0.38, 0]}
             rotation={[0, 0, Math.PI / 2]}
-            material={steelMaterial}
+            material={forgedGunmetalMat}
           >
-            <cylinderGeometry args={[0.28, 0.28, 0.22, 16]} />
+            <cylinderGeometry args={[0.27, 0.27, 0.26, 24]} />
+          </mesh>
+          {/* Right Shackle Ear */}
+          <mesh
+            position={[0.58, -0.38, 0]}
+            rotation={[0, 0, Math.PI / 2]}
+            material={forgedGunmetalMat}
+          >
+            <cylinderGeometry args={[0.27, 0.27, 0.26, 24]} />
+          </mesh>
+          {/* High-Visibility Safety Clevis Pin */}
+          <mesh
+            position={[0, -0.38, 0]}
+            rotation={[0, 0, Math.PI / 2]}
+            material={safetyAmberMat}
+          >
+            <cylinderGeometry args={[0.15, 0.15, 1.72, 24]} />
+          </mesh>
+          {/* Pin Eye Head (Left) */}
+          <mesh
+            position={[-0.88, -0.38, 0]}
+            rotation={[0, 0, Math.PI / 2]}
+            material={safetyAmberMat}
+          >
+            <cylinderGeometry args={[0.28, 0.28, 0.16, 20]} />
+          </mesh>
+          {/* Hex Retaining Nut (Right) */}
+          <mesh
+            position={[0.84, -0.38, 0]}
+            rotation={[0, 0, Math.PI / 2]}
+            material={stainlessSteelMat}
+          >
+            <cylinderGeometry args={[0.24, 0.24, 0.18, 6]} />
           </mesh>
         </group>
       )}
 
+      {/* 6. MS/SS INDUSTRIAL PRODUCTS: Polished SS Bolted Pipe Flange + Structural Steel I-Beam */}
       {shapeType === "metal" && (
         <group>
-          <mesh material={steelMaterial}>
-            <boxGeometry args={[0.22, 1.1, 1.35]} />
-          </mesh>
-          <mesh position={[0, 0.58, 0]} material={navyMaterial}>
-            <boxGeometry args={[1.15, 0.2, 1.35]} />
-          </mesh>
-          <mesh position={[0, -0.58, 0]} material={navyMaterial}>
-            <boxGeometry args={[1.15, 0.2, 1.35]} />
-          </mesh>
-          <mesh position={[0, 0.7, 0]} material={amberMaterial}>
-            <boxGeometry args={[0.45, 0.05, 1.37]} />
-          </mesh>
+          {/* Left/Front: Polished Stainless Steel Pipe Flange */}
+          <group position={[-0.32, -0.05, 0.18]} rotation={[0.45, 0.25, 0]}>
+            <mesh material={stainlessSteelMat}>
+              <cylinderGeometry args={[0.68, 0.68, 0.16, 36]} />
+            </mesh>
+            <mesh position={[0, 0.14, 0]} material={stainlessSteelMat}>
+              <cylinderGeometry args={[0.38, 0.44, 0.18, 32]} />
+            </mesh>
+            <mesh position={[0, 0.1, 0]} material={forgedGunmetalMat}>
+              <cylinderGeometry args={[0.26, 0.26, 0.28, 28]} />
+            </mesh>
+            {/* 8 Bolt Studs around Flange Perimeter */}
+            {Array.from({ length: 8 }).map((_, idx) => {
+              const angle = (idx / 8) * Math.PI * 2;
+              return (
+                <mesh
+                  key={idx}
+                  position={[
+                    Math.cos(angle) * 0.53,
+                    0.09,
+                    Math.sin(angle) * 0.53,
+                  ]}
+                  material={forgedGunmetalMat}
+                >
+                  <cylinderGeometry args={[0.045, 0.045, 0.06, 12]} />
+                </mesh>
+              );
+            })}
+          </group>
+
+          {/* Right/Back: Structural Mild Steel I-Beam Section */}
+          <group position={[0.42, 0.08, -0.18]} rotation={[0.1, -0.35, 0]}>
+            <mesh material={forgedGunmetalMat}>
+              <boxGeometry args={[0.16, 0.88, 1.15]} />
+            </mesh>
+            <mesh position={[0, 0.46, 0]} material={stainlessSteelMat}>
+              <boxGeometry args={[0.78, 0.14, 1.15]} />
+            </mesh>
+            <mesh position={[0, -0.46, 0]} material={stainlessSteelMat}>
+              <boxGeometry args={[0.78, 0.14, 1.15]} />
+            </mesh>
+          </group>
         </group>
       )}
 
+      {/* 7. OTHER INDUSTRIAL SUPPLIES: Machined Brass Industrial Ball Valve with Lever Handle */}
       {shapeType === "general" && (
-        <group>
-          <mesh material={navyMaterial}>
-            <cylinderGeometry args={[0.82, 0.82, 0.55, 6]} />
-          </mesh>
-          <mesh material={steelMaterial}>
-            <cylinderGeometry args={[0.48, 0.48, 0.85, 24]} />
-          </mesh>
+        <group position={[0, -0.05, 0]}>
+          {/* Main Forged Brass Valve Body */}
           <mesh
-            position={[0, 0.32, 0]}
-            rotation={[Math.PI / 2, 0, 0]}
-            material={amberMaterial}
+            rotation={[0, 0, Math.PI / 2]}
+            material={machinedBrassMat}
           >
-            <torusGeometry args={[0.5, 0.08, 14, 28]} />
+            <cylinderGeometry args={[0.38, 0.38, 0.95, 24]} />
+          </mesh>
+          {/* Left Hex Port */}
+          <mesh
+            position={[-0.58, 0, 0]}
+            rotation={[0, 0, Math.PI / 2]}
+            material={machinedBrassMat}
+          >
+            <cylinderGeometry args={[0.44, 0.44, 0.28, 6]} />
+          </mesh>
+          {/* Right Hex Port */}
+          <mesh
+            position={[0.58, 0, 0]}
+            rotation={[0, 0, Math.PI / 2]}
+            material={machinedBrassMat}
+          >
+            <cylinderGeometry args={[0.44, 0.44, 0.28, 6]} />
+          </mesh>
+          {/* Stainless Valve Stem */}
+          <mesh position={[0, 0.42, 0]} material={stainlessSteelMat}>
+            <cylinderGeometry args={[0.14, 0.18, 0.36, 20]} />
+          </mesh>
+          {/* Safety Amber Valve Lever Handle */}
+          <mesh position={[0.38, 0.62, 0]} material={safetyAmberMat}>
+            <boxGeometry args={[0.95, 0.09, 0.18]} />
           </mesh>
         </group>
       )}
@@ -302,9 +525,14 @@ export default function Category3DScene({
 }: Category3DSceneProps) {
   return (
     <Canvas
-      dpr={[1, 1.5]}
-      camera={{ position: [0, 0, 3.1], fov: 42 }}
-      gl={{ antialias: true, alpha: true, powerPreference: "low-power" }}
+      dpr={[1, 1.75]}
+      camera={{ position: [0, 0, 3.0], fov: 40 }}
+      gl={{
+        antialias: true,
+        alpha: true,
+        toneMapping: THREE.ACESFilmicToneMapping,
+        toneMappingExposure: 1.15,
+      }}
       style={{
         width: "100%",
         height: "100%",
@@ -312,9 +540,10 @@ export default function Category3DScene({
         touchAction: "pan-x pan-y",
       }}
     >
-      <ambientLight intensity={1.3} />
-      <directionalLight position={[4, 6, 5]} intensity={1.8} />
-      <directionalLight position={[-3, -3, 2]} intensity={0.8} />
+      <StudioEnvironment />
+      <ambientLight intensity={0.7} />
+      <directionalLight position={[4, 6, 5]} intensity={1.4} />
+      <directionalLight position={[-4, -2, 3]} intensity={0.6} />
       <IndustrialModelOrProceduralMesh
         shapeType={shapeType}
         modelPath={modelPath}
