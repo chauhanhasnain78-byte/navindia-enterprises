@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
@@ -8,11 +8,24 @@ import { companyConfig } from "@/config/company";
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
 import { Logo } from "@/components/ui/Logo";
+import { useIntroMotion } from "@/components/motion/IntroMotionProvider";
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
+  const { prefersReducedMotion } = useIntroMotion();
+
+  useEffect(() => {
+    const onScroll = () => {
+      const scrolled = window.scrollY > 24;
+      setIsScrolled((prev) => (prev !== scrolled ? scrolled : prev));
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   const handleSearchClick = () => {
     setMobileMenuOpen(false);
@@ -33,13 +46,37 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-navy/95 backdrop-blur-md">
-      <Container>
-        <div className="flex h-16 sm:h-20 items-center justify-between gap-3">
-          {/* Logo / Wordmark */}
-          <Logo theme="dark" />
+    <header className="sticky top-0 z-50 w-full h-16 sm:h-20">
+      {/* Base Header Backdrop */}
+      <div
+        className="pointer-events-none absolute inset-0 bg-navy/90 backdrop-blur-md border-b border-white/10"
+        aria-hidden="true"
+      />
+      {/* Compact Scrolled Blurred Backdrop Overlay (animates opacity only for 60fps & zero layout shift) */}
+      <div
+        className={`pointer-events-none absolute inset-0 bg-navy-dark/95 backdrop-blur-lg border-b border-amber-accent/20 shadow-lg transition-opacity duration-300 ${
+          isScrolled ? "opacity-100" : "opacity-0"
+        }`}
+        aria-hidden="true"
+      />
 
-          {/* Desktop Navigation */}
+      <Container className="relative z-10 h-full">
+        <motion.div
+          animate={
+            prefersReducedMotion
+              ? { scale: 1, y: 0 }
+              : isScrolled
+              ? { scale: 0.97, y: -1 }
+              : { scale: 1, y: 0 }
+          }
+          transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+          style={{ willChange: "transform" }}
+          className="flex h-full items-center justify-between gap-3 origin-center"
+        >
+          {/* Logo / Wordmark with shared layoutId landing */}
+          <Logo theme="dark" location="header" />
+
+          {/* Desktop Navigation with animated hover underline */}
           <nav
             aria-label="Main navigation"
             className="hidden lg:flex items-center gap-7"
@@ -48,9 +85,13 @@ export function Header() {
               <Link
                 key={item.label}
                 href={item.href}
-                className="text-sm font-medium text-steel-light/90 transition-colors hover:text-amber-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-accent rounded px-1 py-0.5"
+                className="group relative py-1 text-sm font-medium text-steel-light/90 transition-colors hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-accent rounded px-1"
               >
-                {item.label}
+                <span>{item.label}</span>
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute bottom-0 left-1 right-1 h-[2px] origin-left scale-x-0 rounded-full bg-amber-accent transition-transform duration-300 ease-out group-hover:scale-x-100 group-focus-visible:scale-x-100"
+                />
               </Link>
             ))}
           </nav>
@@ -62,7 +103,7 @@ export function Header() {
               onClick={handleSearchClick}
               aria-label="Search product categories"
               title="Search product categories"
-              className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-white/15 text-steel-light transition-colors hover:border-amber-accent hover:text-amber-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-accent"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-white/15 text-steel-light transition-transform transition-colors duration-200 hover:-translate-y-0.5 hover:border-amber-accent hover:text-amber-accent active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-accent"
             >
               <svg
                 viewBox="0 0 24 24"
@@ -90,8 +131,12 @@ export function Header() {
               type="button"
               onClick={() => setMobileMenuOpen((prev) => !prev)}
               aria-expanded={mobileMenuOpen}
-              aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
-              className="inline-flex lg:hidden h-10 w-10 items-center justify-center rounded-md border border-white/15 text-white transition-colors hover:border-amber-accent hover:text-amber-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-accent"
+              aria-label={
+                mobileMenuOpen
+                  ? "Close navigation menu"
+                  : "Open navigation menu"
+              }
+              className="inline-flex lg:hidden h-10 w-10 items-center justify-center rounded-md border border-white/15 text-white transition-transform transition-colors duration-200 active:scale-95 hover:border-amber-accent hover:text-amber-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-accent"
             >
               {mobileMenuOpen ? (
                 <svg
@@ -125,21 +170,25 @@ export function Header() {
               )}
             </button>
           </div>
-        </div>
+        </motion.div>
       </Container>
 
-      {/* Mobile Navigation Drawer */}
+      {/* Mobile Navigation Drawer (animates transform & opacity only) */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            className="lg:hidden overflow-hidden border-t border-white/10 bg-navy-dark"
+            style={{ willChange: "transform, opacity" }}
+            className="lg:hidden absolute left-0 right-0 top-full border-t border-white/10 bg-navy-dark shadow-xl"
           >
             <Container className="py-4">
-              <nav aria-label="Mobile navigation" className="flex flex-col space-y-1">
+              <nav
+                aria-label="Mobile navigation"
+                className="flex flex-col space-y-1"
+              >
                 {companyConfig.navigation.map((item) => (
                   <Link
                     key={item.label}

@@ -5,6 +5,7 @@ import { companyConfig } from "@/config/company";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { FloatingActions } from "@/components/layout/FloatingActions";
+import { IntroMotionProvider } from "@/components/motion/IntroMotionProvider";
 
 const manrope = Manrope({
   subsets: ["latin"],
@@ -71,10 +72,12 @@ export default function RootLayout({
         <meta name="twitter:image" content={companyConfig.logo.path} />
       </head>
       <body className="min-h-screen flex flex-col font-sans bg-white text-navy selection:bg-amber-accent selection:text-navy-dark">
-        <Header />
-        <main className="flex-1">{children}</main>
-        <Footer />
-        <FloatingActions />
+        <IntroMotionProvider>
+          <Header />
+          <main className="flex-1">{children}</main>
+          <Footer />
+          <FloatingActions />
+        </IntroMotionProvider>
       </body>
     </html>
   );

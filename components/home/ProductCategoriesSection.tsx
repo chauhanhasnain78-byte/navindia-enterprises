@@ -7,9 +7,11 @@ import { Container } from "@/components/ui/Container";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { CategoryCard } from "@/components/cards/CategoryCard";
 import { Button } from "@/components/ui/Button";
+import { useIntroMotion } from "@/components/motion/IntroMotionProvider";
 
 export function ProductCategoriesSection() {
   const [searchQuery, setSearchQuery] = useState("");
+  const { prefersReducedMotion } = useIntroMotion();
 
   const filteredCategories = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
@@ -30,18 +32,11 @@ export function ProductCategoriesSection() {
       className="py-16 sm:py-24 bg-steel-light/50 border-b border-silver/60"
     >
       <Container>
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-60px" }}
-          transition={{ duration: 0.4, ease: "easeOut" }}
-        >
-          <SectionHeading
-            eyebrow="Product Categories"
-            title="Industrial Supplies Arranged to Your Specification"
-            subtitle="Browse our core industrial product groups or search below to send us your custom requirement."
-          />
-        </motion.div>
+        <SectionHeading
+          eyebrow="Product Categories"
+          title="Industrial Supplies Arranged to Your Specification"
+          subtitle="Browse our core industrial product groups or search below to send us your custom requirement."
+        />
 
         {/* Categories: Horizontally scrollable on mobile, 2 cols on tablet, 4 cols on large screens */}
         {filteredCategories.length > 0 ? (
@@ -50,14 +45,21 @@ export function ProductCategoriesSection() {
               {filteredCategories.map((category, index) => (
                 <motion.div
                   key={category.id}
-                  initial={{ opacity: 0, y: 16 }}
+                  initial={
+                    prefersReducedMotion
+                      ? { opacity: 1, y: 0 }
+                      : { opacity: 0, y: 18 }
+                  }
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, margin: "-40px" }}
                   transition={{
-                    duration: 0.35,
-                    delay: Math.min(index * 0.05, 0.25),
-                    ease: "easeOut",
+                    duration: 0.4,
+                    delay: prefersReducedMotion
+                      ? 0
+                      : Math.min(index * 0.06, 0.3),
+                    ease: [0.22, 1, 0.36, 1],
                   }}
+                  style={{ willChange: "transform, opacity" }}
                   className="w-[82vw] max-w-[310px] shrink-0 snap-start sm:w-auto sm:max-w-none sm:shrink"
                 >
                   <CategoryCard category={category} enable3D={true} />
@@ -97,8 +99,17 @@ export function ProductCategoriesSection() {
         )}
 
         {/* Search Bar directly below categories: Search input box above the "Can't find your product?" message */}
-        <div
+        <motion.div
           id="product-search"
+          initial={
+            prefersReducedMotion
+              ? { opacity: 1, y: 0 }
+              : { opacity: 0, y: 16 }
+          }
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-40px" }}
+          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+          style={{ willChange: "transform, opacity" }}
           className="mt-10 rounded-xl border border-silver bg-white p-5 sm:p-6 shadow-card"
         >
           <div className="mx-auto max-w-3xl space-y-4">
@@ -141,7 +152,7 @@ export function ProductCategoriesSection() {
               </Button>
             </div>
           </div>
-        </div>
+        </motion.div>
       </Container>
     </section>
   );

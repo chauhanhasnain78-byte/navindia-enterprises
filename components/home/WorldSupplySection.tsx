@@ -6,34 +6,34 @@ import { companyConfig } from "@/config/company";
 import { Container } from "@/components/ui/Container";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Button } from "@/components/ui/Button";
+import { useIntroMotion } from "@/components/motion/IntroMotionProvider";
 
 export function WorldSupplySection() {
   const origin = companyConfig.originPoint;
   const destinations = companyConfig.highlightedCountries;
+  const { prefersReducedMotion } = useIntroMotion();
 
   return (
     <section className="py-16 sm:py-24 bg-navy text-white border-b border-white/10 overflow-hidden">
       <Container>
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-60px" }}
-          transition={{ duration: 0.4, ease: "easeOut" }}
-        >
-          <SectionHeading
-            eyebrow="Supply Across the World"
-            title="From Mumbai to the Gulf &amp; International Markets"
-            subtitle="Focused export supply corridors to the UAE, Qatar, and Bahrain, with enquiries welcomed from buyers worldwide."
-            theme="dark"
-          />
-        </motion.div>
+        <SectionHeading
+          eyebrow="Supply Across the World"
+          title="From Mumbai to the Gulf & International Markets"
+          subtitle="Focused export supply corridors to the UAE, Qatar, and Bahrain, with enquiries welcomed from buyers worldwide."
+          theme="dark"
+        />
 
         {/* Clean 2D World Map SVG Card */}
         <motion.div
-          initial={{ opacity: 0, y: 18 }}
+          initial={
+            prefersReducedMotion
+              ? { opacity: 1, y: 0 }
+              : { opacity: 0, y: 18 }
+          }
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-40px" }}
-          transition={{ duration: 0.45, ease: "easeOut" }}
+          transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+          style={{ willChange: "transform, opacity" }}
           className="mt-10 rounded-2xl border border-white/15 bg-navy-dark/90 p-4 sm:p-8 shadow-card"
         >
           <div className="relative w-full overflow-hidden rounded-xl bg-[#061122] border border-white/10">
@@ -110,7 +110,7 @@ export function WorldSupplySection() {
                 <path d="M 678 245 Q 745 250 800 295" />
               </g>
 
-              {/* Primary Animated Supply Arcs from Mumbai, India to UAE, Qatar, Bahrain */}
+              {/* Supply Lines from India to UAE, Qatar, Bahrain: draw one after another */}
               {destinations.map((dest, idx) => {
                 const midX = (origin.coordinates.x + dest.coordinates.x) / 2;
                 const midY =
@@ -120,46 +120,76 @@ export function WorldSupplySection() {
 
                 return (
                   <g key={dest.id}>
-                    {/* Base subtle route line */}
+                    {/* Base subtle route guide */}
                     <path
                       d={pathData}
                       stroke="#F5A524"
-                      strokeOpacity="0.3"
-                      strokeWidth="2"
+                      strokeOpacity="0.2"
+                      strokeWidth="1.8"
                       fill="none"
                     />
-                    {/* Animated route pulse */}
+                    {/* Sequential route draw (one after another) */}
                     <motion.path
                       d={pathData}
                       stroke="#F5A524"
-                      strokeWidth="2.5"
+                      strokeWidth="2.6"
                       strokeLinecap="round"
                       fill="none"
-                      initial={{ pathLength: 0, opacity: 0.4 }}
+                      initial={
+                        prefersReducedMotion
+                          ? { pathLength: 1, opacity: 1 }
+                          : { pathLength: 0, opacity: 0 }
+                      }
                       whileInView={{ pathLength: 1, opacity: 1 }}
-                      viewport={{ once: false }}
+                      viewport={{ once: true, margin: "-40px" }}
                       transition={{
-                        duration: 1.8,
-                        delay: idx * 0.25,
-                        repeat: Infinity,
-                        repeatType: "loop",
-                        repeatDelay: 1.2,
-                        ease: "easeInOut",
+                        pathLength: {
+                          duration: 0.85,
+                          delay: prefersReducedMotion ? 0 : 0.2 + idx * 0.65,
+                          ease: [0.22, 1, 0.36, 1],
+                        },
+                        opacity: {
+                          duration: 0.2,
+                          delay: prefersReducedMotion ? 0 : 0.2 + idx * 0.65,
+                        },
                       }}
                     />
                   </g>
                 );
               })}
 
-              {/* Highlighted Gulf Destination Nodes (UAE, Qatar, Bahrain) */}
-              {destinations.map((dest) => (
+              {/* Highlighted Gulf Destination Dots (UAE, Qatar, Bahrain): soft pulse */}
+              {destinations.map((dest, idx) => (
                 <g key={`node-${dest.id}`}>
+                  {!prefersReducedMotion && (
+                    <motion.circle
+                      cx={dest.coordinates.x}
+                      cy={dest.coordinates.y}
+                      r="8"
+                      fill="#F5A524"
+                      initial={{ scale: 0.85, opacity: 0.15 }}
+                      animate={{
+                        scale: [0.9, 1.55, 0.9],
+                        opacity: [0.38, 0.1, 0.38],
+                      }}
+                      transition={{
+                        duration: 2.8,
+                        delay: idx * 0.45,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                      }}
+                      style={{
+                        transformOrigin: `${dest.coordinates.x}px ${dest.coordinates.y}px`,
+                        willChange: "transform, opacity",
+                      }}
+                    />
+                  )}
                   <circle
                     cx={dest.coordinates.x}
                     cy={dest.coordinates.y}
-                    r="7"
+                    r="6.5"
                     fill="#F5A524"
-                    fillOpacity="0.25"
+                    fillOpacity="0.22"
                   />
                   <circle
                     cx={dest.coordinates.x}
@@ -182,8 +212,33 @@ export function WorldSupplySection() {
                 </g>
               ))}
 
-              {/* Origin Node: Mumbai, India */}
+              {/* Origin Node: Mumbai, India with calm ping */}
               <g>
+                {!prefersReducedMotion && (
+                  <motion.circle
+                    cx={origin.coordinates.x}
+                    cy={origin.coordinates.y}
+                    r="9"
+                    stroke="#F5A524"
+                    strokeWidth="2"
+                    fill="#F5A524"
+                    fillOpacity="0.2"
+                    initial={{ scale: 1, opacity: 0.65 }}
+                    animate={{
+                      scale: [1, 2.35],
+                      opacity: [0.65, 0],
+                    }}
+                    transition={{
+                      duration: 2.6,
+                      repeat: Infinity,
+                      ease: "easeOut",
+                    }}
+                    style={{
+                      transformOrigin: `${origin.coordinates.x}px ${origin.coordinates.y}px`,
+                      willChange: "transform, opacity",
+                    }}
+                  />
+                )}
                 <circle
                   cx={origin.coordinates.x}
                   cy={origin.coordinates.y}

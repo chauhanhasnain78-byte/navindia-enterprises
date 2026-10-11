@@ -4,16 +4,24 @@ import React from "react";
 import { motion } from "framer-motion";
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
+import { useIntroMotion } from "@/components/motion/IntroMotionProvider";
 
 export function FinalCtaSection() {
+  const { prefersReducedMotion } = useIntroMotion();
+
   return (
     <section className="py-16 sm:py-24 bg-white border-b border-silver/60">
       <Container>
         <motion.div
-          initial={{ opacity: 0, y: 16 }}
+          initial={
+            prefersReducedMotion
+              ? { opacity: 1, y: 0 }
+              : { opacity: 0, y: 18 }
+          }
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-40px" }}
-          transition={{ duration: 0.4, ease: "easeOut" }}
+          transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+          style={{ willChange: "transform, opacity" }}
           className="rounded-2xl bg-navy px-6 py-12 sm:px-12 sm:py-16 text-center text-white shadow-card border border-navy-dark"
         >
           <span className="inline-block text-xs font-bold uppercase tracking-[0.16em] text-amber-accent">

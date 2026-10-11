@@ -1,5 +1,9 @@
+"use client";
+
 import React from "react";
+import { motion } from "framer-motion";
 import { BuyerFeature } from "@/config/company";
+import { useIntroMotion } from "@/components/motion/IntroMotionProvider";
 
 interface FeatureCardProps {
   feature: BuyerFeature;
@@ -80,10 +84,18 @@ function FeatureIcon({ iconName }: { iconName: BuyerFeature["iconName"] }) {
 }
 
 export function FeatureCard({ feature }: FeatureCardProps) {
+  const { prefersReducedMotion } = useIntroMotion();
+
   return (
-    <div className="flex h-full flex-col justify-between rounded-xl border border-silver bg-white p-6 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:border-navy/40 hover:shadow-card-hover">
+    <motion.div
+      whileHover={prefersReducedMotion ? undefined : { y: -5 }}
+      whileTap={prefersReducedMotion ? undefined : { scale: 0.99 }}
+      transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+      style={{ willChange: "transform" }}
+      className="group relative flex h-full flex-col justify-between rounded-xl border border-silver bg-white p-6 shadow-card transition-colors duration-200 hover:border-navy/40 overflow-hidden"
+    >
       <div>
-        <div className="mb-5 inline-flex h-12 w-12 items-center justify-center rounded-lg bg-navy">
+        <div className="mb-5 inline-flex h-12 w-12 items-center justify-center rounded-lg bg-navy transition-transform duration-200 group-hover:scale-105">
           <FeatureIcon iconName={feature.iconName} />
         </div>
         <h3 className="text-lg font-bold tracking-tight text-navy leading-snug">
@@ -93,6 +105,6 @@ export function FeatureCard({ feature }: FeatureCardProps) {
           {feature.description}
         </p>
       </div>
-    </div>
+    </motion.div>
   );
 }
