@@ -7,7 +7,7 @@ import { CategoryCard } from "@/components/cards/CategoryCard";
 
 export const metadata: Metadata = {
   title: "Product Categories",
-  description: `Explore the 7 industrial supply categories offered by ${companyConfig.name}.`,
+  description: `Explore the 9 industrial supply categories offered by ${companyConfig.name}.`,
 };
 
 export default function ProductsIndexPlaceholderPage() {

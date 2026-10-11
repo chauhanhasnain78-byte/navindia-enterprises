@@ -233,6 +233,69 @@ export function CategoryStaticIcon({
         </svg>
       );
 
+    case "clamp":
+      return (
+        <svg
+          viewBox="0 0 80 80"
+          fill="none"
+          className={className}
+          aria-hidden="true"
+        >
+          {/* Heavy-duty industrial pipe clamp */}
+          <circle
+            cx="40"
+            cy="42"
+            r="20"
+            stroke="#0B1F3A"
+            strokeWidth="6"
+          />
+          <rect
+            x="24"
+            y="14"
+            width="32"
+            height="8"
+            rx="2"
+            fill="#F5A524"
+            stroke="#0B1F3A"
+            strokeWidth="2"
+          />
+        </svg>
+      );
+
+    case "bearing":
+      return (
+        <svg
+          viewBox="0 0 80 80"
+          fill="none"
+          className={className}
+          aria-hidden="true"
+        >
+          {/* Precision ball/roller bearing */}
+          <circle
+            cx="40"
+            cy="40"
+            r="26"
+            stroke="#0B1F3A"
+            strokeWidth="5"
+          />
+          <circle
+            cx="40"
+            cy="40"
+            r="18"
+            stroke="#F5A524"
+            strokeWidth="4"
+            strokeDasharray="4 5"
+          />
+          <circle
+            cx="40"
+            cy="40"
+            r="11"
+            stroke="#0B1F3A"
+            strokeWidth="4"
+          />
+        </svg>
+      );
+
     case "metal":
       return (
         <svg

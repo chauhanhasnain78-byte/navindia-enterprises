@@ -4,8 +4,11 @@ export type CategoryShapeType =
   | "seal"
   | "abrasive"
   | "lifting"
+  | "clamp"
+  | "bearing"
   | "metal"
   | "general";
+
 
 export interface ProductCategory {
   id: string;
@@ -109,22 +112,22 @@ export const companyConfig = {
   worldSupplyNote: "Tell us your country, we will confirm.",
   categories: [
     {
-      id: "hoses",
+      id: "industrial-hoses",
       slug: "hoses",
-      name: "Hoses",
+      name: "Industrial Hoses (Pipes & Tubes)",
       description:
-        "Industrial hoses arranged to your required size and duty.",
+        "Industrial hoses, pipes, and tubes arranged to your required size and duty.",
       shapeType: "hose",
       imagePath: "/products/hoses.jpg",
       modelPath: "/models/hoses.glb",
-      keywords: ["hose", "hoses"],
+      keywords: ["hose", "hoses", "industrial hoses", "pipes", "tubes"],
     },
     {
       id: "fasteners",
       slug: "fasteners",
-      name: "Fasteners (bolts, nuts, washers, studs, eye bolts)",
+      name: "Fasteners (Bolts, Nuts & Studs)",
       description:
-        "Fasteners arranged to your required size, grade, and specification.",
+        "Fasteners including bolts, nuts, and studs arranged to your required size, grade, and specification.",
       shapeType: "fastener",
       imagePath: "/products/fasteners.jpg",
       modelPath: "/models/fasteners.glb",
@@ -132,43 +135,90 @@ export const companyConfig = {
         "fasteners",
         "bolts",
         "nuts",
-        "washers",
         "studs",
+        "washers",
         "eye bolts",
       ],
     },
     {
       id: "seals-and-o-rings",
       slug: "seals-and-o-rings",
-      name: "Seals and O-Rings",
+      name: "Seals & O-Rings",
       description:
         "O-rings and sealing products arranged to your dimensions and material.",
       shapeType: "seal",
       imagePath: "/products/seals-and-o-rings.jpg",
       modelPath: "/models/seals-and-o-rings.glb",
-      keywords: ["seals", "o-rings", "orings", "sealing"],
+      keywords: ["seals", "o-rings", "orings", "sealing", "gaskets"],
     },
     {
       id: "abrasives",
       slug: "abrasives",
-      name: "Abrasives",
+      name: "Abrasives (Grinding Wheels & Discs)",
       description:
-        "Industrial abrasives arranged to your application and specification.",
+        "Grinding wheels, cutting discs, and industrial abrasives arranged to your application and specification.",
       shapeType: "abrasive",
       imagePath: "/products/abrasives.jpg",
       modelPath: "/models/abrasives.glb",
-      keywords: ["abrasives", "abrasive"],
+      keywords: [
+        "abrasives",
+        "abrasive",
+        "grinding wheels",
+        "discs",
+        "flap discs",
+      ],
     },
     {
       id: "lifting-products",
       slug: "lifting-products",
-      name: "Lifting Products",
+      name: "Lifting & Rigging Products (Slings, Chains & Shackles)",
       description:
-        "Lifting-related products arranged to your specification.",
+        "Slings, chains, shackles, and lifting products arranged to your specification.",
       shapeType: "lifting",
       imagePath: "/products/lifting-products.jpg",
       modelPath: "/models/lifting-products.glb",
-      keywords: ["lifting", "lifting products"],
+      keywords: [
+        "lifting",
+        "rigging",
+        "slings",
+        "chains",
+        "shackles",
+        "lifting products",
+      ],
+    },
+    {
+      id: "industrial-clamps",
+      slug: "industrial-clamps",
+      name: "Industrial Clamps",
+      description:
+        "Heavy-duty hose, pipe, and mounting clamps arranged to your required size and material.",
+      shapeType: "clamp",
+      imagePath: "/products/industrial-clamps.jpg",
+      modelPath: "/models/industrial-clamps.glb",
+      keywords: [
+        "clamps",
+        "industrial clamps",
+        "hose clamps",
+        "pipe clamps",
+        "u-bolt clamps",
+        "t-bolt clamps",
+      ],
+    },
+    {
+      id: "bearings",
+      slug: "bearings",
+      name: "Bearings (Roller & Ball Bearings)",
+      description:
+        "Roller bearings and ball bearings arranged to your required series, dimensions, and specification.",
+      shapeType: "bearing",
+      imagePath: "/products/bearings.jpg",
+      modelPath: "/models/bearings.glb",
+      keywords: [
+        "bearings",
+        "roller bearings",
+        "ball bearings",
+        "bearing",
+      ],
     },
     {
       id: "ms-ss-industrial-products",
@@ -179,7 +229,7 @@ export const companyConfig = {
       shapeType: "metal",
       imagePath: "/products/ms-ss-industrial-products.jpg",
       modelPath: "/models/ms-ss-industrial-products.glb",
-      keywords: ["ms", "ss", "mild steel", "stainless steel"],
+      keywords: ["ms", "ss", "mild steel", "stainless steel", "flanges", "fittings"],
     },
     {
       id: "other-industrial-supplies",

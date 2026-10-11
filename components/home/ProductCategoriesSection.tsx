@@ -128,7 +128,7 @@ export function ProductCategoriesSection() {
                 aria-label="Can't find your product? Search or tell us what you need."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search product categories (e.g., hoses, bolts, O-rings, abrasives, lifting, MS/SS)..."
+                placeholder="Search product categories (e.g., hoses, fasteners, seals, abrasives, lifting, clamps, bearings, MS/SS)..."
                 className="h-12 w-full rounded-md border border-silver bg-steel-light/35 pl-10 pr-4 text-sm sm:text-base text-navy placeholder:text-steel focus:border-navy focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-accent"
               />
             </div>
