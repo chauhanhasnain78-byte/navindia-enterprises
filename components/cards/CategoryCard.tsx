@@ -6,7 +6,6 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { ProductCategory } from "@/config/company";
 import { CategoryStaticIcon } from "./CategoryStaticIcon";
-import { useIntroMotion } from "@/components/motion/IntroMotionProvider";
 
 const Category3DScene = dynamic(() => import("./Category3DScene"), {
   ssr: false,
@@ -45,16 +44,6 @@ class CanvasErrorBoundary extends Component<
 function canUseLightweight3D(): boolean {
   if (typeof window === "undefined") return false;
   try {
-    if (
-      window.matchMedia &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    ) {
-      return false;
-    }
-    const cores = navigator.hardwareConcurrency;
-    if (typeof cores === "number" && cores < 2) {
-      return false;
-    }
     const canvas = document.createElement("canvas");
     const gl =
       canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
@@ -77,18 +66,17 @@ export function CategoryCard({
   const [isInViewport, setIsInViewport] = useState(false);
   const [isHoveredOrTouched, setIsHoveredOrTouched] = useState(false);
   const [webglAvailable, setWebglAvailable] = useState(false);
-  const { prefersReducedMotion } = useIntroMotion();
 
   useEffect(() => {
-    if (!enable3D || prefersReducedMotion) {
+    if (!enable3D) {
       setWebglAvailable(false);
       return;
     }
     setWebglAvailable(canUseLightweight3D());
-  }, [enable3D, prefersReducedMotion]);
+  }, [enable3D]);
 
   useEffect(() => {
-    if (!enable3D || prefersReducedMotion || !cardRef.current) return;
+    if (!enable3D || !cardRef.current) return;
     const node = cardRef.current;
 
     const observer = new IntersectionObserver(
@@ -99,8 +87,8 @@ export function CategoryCard({
         }
       },
       {
-        rootMargin: "40px",
-        threshold: 0.15,
+        rootMargin: "60px",
+        threshold: 0.1,
       }
     );
 
@@ -108,16 +96,13 @@ export function CategoryCard({
     return () => {
       observer.disconnect();
     };
-  }, [enable3D, prefersReducedMotion]);
+  }, [enable3D]);
 
   const show3D =
-    enable3D &&
-    !prefersReducedMotion &&
-    webglAvailable &&
-    (isInViewport || isHoveredOrTouched);
+    enable3D && webglAvailable && (isInViewport || isHoveredOrTouched);
 
   const staticFallback = (
-    <div className="flex h-full w-full items-center justify-center">
+    <div className="flex h-full w-full items-center justify-center pointer-events-none">
       <CategoryStaticIcon
         shapeType={category.shapeType}
         className="h-20 w-20 transition-transform duration-300 group-hover:scale-105"
@@ -128,8 +113,7 @@ export function CategoryCard({
   return (
     <motion.div
       ref={cardRef}
-      whileHover={prefersReducedMotion ? undefined : { y: -5 }}
-      whileTap={prefersReducedMotion ? undefined : { scale: 0.985 }}
+      whileHover={{ y: -5 }}
       transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
       style={{ willChange: "transform" }}
       className="h-full"
@@ -138,9 +122,7 @@ export function CategoryCard({
         href={`/products/${category.slug}`}
         onMouseEnter={() => setIsHoveredOrTouched(true)}
         onMouseLeave={() => setIsHoveredOrTouched(false)}
-        onTouchStart={() => setIsHoveredOrTouched(true)}
-        onTouchEnd={() => setIsHoveredOrTouched(false)}
-        className="group relative flex h-full flex-col justify-between rounded-xl border border-silver bg-white p-5 sm:p-6 shadow-card transition-colors duration-300 hover:border-amber-accent/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-accent overflow-hidden"
+        className="group relative flex h-full flex-col justify-between rounded-xl border border-silver bg-white p-5 sm:p-6 shadow-card transition-colors duration-300 hover:border-amber-accent/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-accent overflow-hidden touch-pan-x"
       >
         {/* Soft border glow overlay on hover (animates opacity only for 60fps) */}
         <span
@@ -149,8 +131,8 @@ export function CategoryCard({
         />
 
         <div className="relative z-10">
-          {/* Visual Preview Container (3D when in view, 2D fallback otherwise) */}
-          <div className="relative mb-5 flex h-36 w-full items-center justify-center overflow-hidden rounded-lg bg-steel-light/65 border border-silver/50">
+          {/* Visual Preview Container: [&_canvas]:!pointer-events-none & !touch-auto ensures R3F canvas never blocks mobile swiping */}
+          <div className="relative mb-5 flex h-36 w-full items-center justify-center overflow-hidden rounded-lg bg-steel-light/65 border border-silver/50 pointer-events-none [&_canvas]:!pointer-events-none [&_canvas]:!touch-auto">
             {show3D ? (
               <CanvasErrorBoundary fallback={staticFallback}>
                 <Category3DScene

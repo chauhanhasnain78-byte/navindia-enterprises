@@ -1,17 +1,16 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { companyConfig } from "@/config/company";
 import { Container } from "@/components/ui/Container";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { CategoryCard } from "@/components/cards/CategoryCard";
 import { Button } from "@/components/ui/Button";
-import { useIntroMotion } from "@/components/motion/IntroMotionProvider";
 
 export function ProductCategoriesSection() {
   const [searchQuery, setSearchQuery] = useState("");
-  const { prefersReducedMotion } = useIntroMotion();
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const filteredCategories = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
@@ -25,6 +24,15 @@ export function ProductCategoriesSection() {
       return inName || inDesc || inKeywords;
     });
   }, [searchQuery]);
+
+  const scrollHorizontal = (direction: "left" | "right") => {
+    if (!scrollContainerRef.current) return;
+    const distance = direction === "left" ? -300 : 300;
+    scrollContainerRef.current.scrollBy({
+      left: distance,
+      behavior: "smooth",
+    });
+  };
 
   return (
     <section
@@ -41,22 +49,20 @@ export function ProductCategoriesSection() {
         {/* Categories: Horizontally scrollable on mobile, 2 cols on tablet, 4 cols on large screens */}
         {filteredCategories.length > 0 ? (
           <div className="mt-10">
-            <div className="flex sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 overflow-x-auto sm:overflow-visible pb-4 sm:pb-0 snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0 no-scrollbar">
+            <div
+              ref={scrollContainerRef}
+              style={{ WebkitOverflowScrolling: "touch", touchAction: "pan-x pan-y" }}
+              className="flex sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 overflow-x-auto sm:overflow-visible pb-4 sm:pb-0 snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0 no-scrollbar"
+            >
               {filteredCategories.map((category, index) => (
                 <motion.div
                   key={category.id}
-                  initial={
-                    prefersReducedMotion
-                      ? { opacity: 1, y: 0 }
-                      : { opacity: 0, y: 18 }
-                  }
+                  initial={{ opacity: 0, y: 18 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, margin: "-40px" }}
                   transition={{
                     duration: 0.4,
-                    delay: prefersReducedMotion
-                      ? 0
-                      : Math.min(index * 0.06, 0.3),
+                    delay: Math.min(index * 0.06, 0.3),
                     ease: [0.22, 1, 0.36, 1],
                   }}
                   style={{ willChange: "transform, opacity" }}
@@ -66,9 +72,31 @@ export function ProductCategoriesSection() {
                 </motion.div>
               ))}
             </div>
-            <p className="mt-2 text-xs text-steel sm:hidden">
-              Swipe horizontally to explore all {filteredCategories.length} categories &rarr;
-            </p>
+
+            {/* Mobile Swipe Hint + Prev/Next Buttons */}
+            <div className="mt-2 flex items-center justify-between sm:hidden">
+              <p className="text-xs font-medium text-steel">
+                Swipe or tap arrows to view all {filteredCategories.length} categories
+              </p>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => scrollHorizontal("left")}
+                  aria-label="Previous category"
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-silver bg-white text-navy shadow-sm active:scale-95"
+                >
+                  &larr;
+                </button>
+                <button
+                  type="button"
+                  onClick={() => scrollHorizontal("right")}
+                  aria-label="Next category"
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-silver bg-white text-navy shadow-sm active:scale-95"
+                >
+                  &rarr;
+                </button>
+              </div>
+            </div>
           </div>
         ) : (
           <motion.div
@@ -101,11 +129,7 @@ export function ProductCategoriesSection() {
         {/* Search Bar directly below categories: Search input box above the "Can't find your product?" message */}
         <motion.div
           id="product-search"
-          initial={
-            prefersReducedMotion
-              ? { opacity: 1, y: 0 }
-              : { opacity: 0, y: 16 }
-          }
+          initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-40px" }}
           transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}

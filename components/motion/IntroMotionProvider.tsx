@@ -12,7 +12,6 @@ import {
   LayoutGroup,
   MotionConfig,
   motion,
-  useReducedMotion,
 } from "framer-motion";
 import { companyConfig } from "@/config/company";
 
@@ -93,9 +92,8 @@ export function IntroMotionProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const reducedMotionHook = useReducedMotion();
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
-  // Start in "fade-in" immediately so the intro plays every time the user opens the site without initial page flash
+  // Always keep animations enabled even on Windows laptops where OS visual effects are off
+  const prefersReducedMotion = false;
   const [introPhase, setIntroPhase] = useState<IntroPhase>("fade-in");
   const [hasLogoImage, setHasLogoImage] = useState(true);
 
@@ -107,94 +105,81 @@ export function IntroMotionProvider({
   }, []);
 
   useEffect(() => {
-    const mediaReduced =
-      Boolean(reducedMotionHook) ||
-      (typeof window !== "undefined" &&
-        window.matchMedia?.("(prefers-reduced-motion: reduce)").matches);
+    let isCancelled = false;
+    let tSpin: number | undefined;
+    let tTravel: number | undefined;
+    let tWordmark: number | undefined;
+    let tComplete: number | undefined;
 
-    setPrefersReducedMotion(mediaReduced);
-
-    if (mediaReduced) {
-      setIntroPhase("complete");
-      document.body.style.overflow = "";
-      return;
-    }
-
-    // Play intro every time the website is opened:
-    // 0.00s -> 0.65s: Logo fades & scales in (0.4s) and settles clearly for a moment (0.25s)
-    // 0.65s -> 1.80s: ONLY the logo spins twice on its Y axis like a coin (1.15s)
-    // 1.80s -> 2.45s: Logo travels to top-left header while overlay fades out (0.65s)
-    // 2.45s -> 2.95s: Company name "NAV INDIA ENTERPRISES" slides/clips out to the right of logo (0.50s)
-    // 2.95s: Complete — hero content animates in
     setIntroPhase("fade-in");
     document.body.style.overflow = "hidden";
 
-    const tSpin = window.setTimeout(() => {
-      setIntroPhase((prev) => (prev === "complete" ? "complete" : "spin"));
-    }, 650);
+    const startSequence = () => {
+      if (isCancelled) return;
 
-    const tTravel = window.setTimeout(() => {
-      setIntroPhase((prev) => (prev === "complete" ? "complete" : "travel"));
-    }, 1800);
+      // 0.00s -> 0.70s: Logo fades & scales in and stays still so user clearly sees the logo first
+      // 0.70s -> 1.90s: ONLY the logo spins twice on its Y axis like a coin (1.20s)
+      // 1.90s -> 2.55s: Logo travels to top-left header while overlay fades out (0.65s)
+      // 2.55s -> 3.00s: Company name "NAV INDIA ENTERPRISES" slides out to the right of logo (0.45s)
+      tSpin = window.setTimeout(() => {
+        if (!isCancelled) {
+          setIntroPhase((prev) => (prev === "complete" ? "complete" : "spin"));
+        }
+      }, 700);
 
-    const tWordmark = window.setTimeout(() => {
-      setIntroPhase((prev) => (prev === "complete" ? "complete" : "wordmark"));
-      document.body.style.overflow = "";
-    }, 2450);
+      tTravel = window.setTimeout(() => {
+        if (!isCancelled) {
+          setIntroPhase((prev) =>
+            prev === "complete" ? "complete" : "travel"
+          );
+        }
+      }, 1900);
 
-    const tComplete = window.setTimeout(() => {
-      setIntroPhase("complete");
-      document.body.style.overflow = "";
-    }, 2950);
+      tWordmark = window.setTimeout(() => {
+        if (!isCancelled) {
+          setIntroPhase((prev) =>
+            prev === "complete" ? "complete" : "wordmark"
+          );
+          document.body.style.overflow = "";
+        }
+      }, 2550);
+
+      tComplete = window.setTimeout(() => {
+        if (!isCancelled) {
+          setIntroPhase("complete");
+          document.body.style.overflow = "";
+        }
+      }, 3000);
+    };
+
+    // Wait for first painted frame on laptop/mobile so timers never lag behind hydration
+    const raf1 = window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        startSequence();
+      });
+    });
 
     return () => {
-      window.clearTimeout(tSpin);
-      window.clearTimeout(tTravel);
-      window.clearTimeout(tWordmark);
-      window.clearTimeout(tComplete);
+      isCancelled = true;
+      window.cancelAnimationFrame(raf1);
+      if (tSpin) window.clearTimeout(tSpin);
+      if (tTravel) window.clearTimeout(tTravel);
+      if (tWordmark) window.clearTimeout(tWordmark);
+      if (tComplete) window.clearTimeout(tComplete);
       document.body.style.overflow = "";
     };
-  }, [reducedMotionHook]);
-
-  // Allow skipping on click/tap/keypress after a tiny 450ms guard so opening taps don't accidentally cancel it
-  useEffect(() => {
-    if (introPhase === "complete") return;
-
-    let active = false;
-    const enableSkipTimer = window.setTimeout(() => {
-      active = true;
-    }, 450);
-
-    const handleUserSkip = () => {
-      if (active) {
-        skipIntro();
-      }
-    };
-
-    window.addEventListener("keydown", handleUserSkip, { passive: true });
-    window.addEventListener("mousedown", handleUserSkip, { passive: true });
-    window.addEventListener("touchstart", handleUserSkip, { passive: true });
-
-    return () => {
-      window.clearTimeout(enableSkipTimer);
-      window.removeEventListener("keydown", handleUserSkip);
-      window.removeEventListener("mousedown", handleUserSkip);
-      window.removeEventListener("touchstart", handleUserSkip);
-    };
-  }, [introPhase, skipIntro]);
+  }, []);
 
   const isOverlayVisible =
-    !prefersReducedMotion &&
-    (introPhase === "fade-in" ||
-      introPhase === "spin" ||
-      introPhase === "travel");
+    introPhase === "fade-in" ||
+    introPhase === "spin" ||
+    introPhase === "travel";
 
   const isCenterLogoMounted =
-    !prefersReducedMotion &&
-    (introPhase === "fade-in" || introPhase === "spin");
+    introPhase === "fade-in" || introPhase === "spin";
 
   return (
-    <MotionConfig reducedMotion="user">
+    <MotionConfig reducedMotion="never">
       <IntroMotionContext.Provider
         value={{
           introPhase,
@@ -234,7 +219,7 @@ export function IntroMotionProvider({
                     }
                     transition={
                       introPhase === "fade-in"
-                        ? { duration: 0.4, ease: [0.22, 1, 0.36, 1] }
+                        ? { duration: 0.42, ease: [0.22, 1, 0.36, 1] }
                         : {
                             rotateY: {
                               duration: 1.15,
@@ -259,6 +244,15 @@ export function IntroMotionProvider({
                     />
                   </motion.div>
                 )}
+
+                {/* Subtle explicit Skip button in corner so accidental mouse clicks don't abort the intro */}
+                <button
+                  type="button"
+                  onClick={skipIntro}
+                  className="absolute bottom-6 right-6 rounded-md border border-white/15 bg-navy/80 px-3 py-1.5 text-xs font-medium text-steel-light/80 hover:text-white transition-colors"
+                >
+                  Skip
+                </button>
               </motion.div>
             )}
           </AnimatePresence>
