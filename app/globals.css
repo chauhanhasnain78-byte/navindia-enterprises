@@ -34,3 +34,23 @@ body {
     scrollbar-width: none;
   }
 }
+
+@keyframes spinProduct360 {
+  0% {
+    transform: rotateX(4deg) rotateY(0deg);
+  }
+  100% {
+    transform: rotateX(4deg) rotateY(360deg);
+  }
+}
+
+.product-spin-360 {
+  transform-style: preserve-3d;
+  animation: spinProduct360 8s linear infinite;
+  will-change: transform;
+}
+
+.group:hover .product-spin-360 {
+  animation-duration: 4.5s;
+}
+
