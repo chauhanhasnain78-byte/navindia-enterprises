@@ -66,20 +66,20 @@ export function BrandMarkVisual({
         onError={onImageError}
         className={
           size === "intro"
-            ? "h-24 w-24 sm:h-28 sm:w-28 rounded-full object-cover aspect-square shadow-2xl select-none"
-            : "h-9 w-9 sm:h-10 sm:w-10 rounded-full object-cover aspect-square select-none"
+            ? "h-24 w-24 sm:h-28 sm:w-28 rounded-xl object-contain shadow-2xl select-none"
+            : "h-9 w-9 sm:h-10 sm:w-10 rounded-md object-contain select-none"
         }
       />
     );
   }
 
-  // Fallback emblem if /public/logo.png ever fails to load (circular logo mark only)
+  // Fallback emblem if /public/logo.png ever fails to load (logo mark only, no company name)
   return (
     <span
       className={
         size === "intro"
-          ? "inline-flex h-24 w-24 sm:h-28 sm:w-28 shrink-0 items-center justify-center rounded-full bg-amber-accent text-navy-dark font-extrabold text-2xl tracking-tighter shadow-2xl select-none"
-          : "inline-flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-full bg-amber-accent text-navy-dark font-extrabold text-xs tracking-tighter select-none"
+          ? "inline-flex h-24 w-24 sm:h-28 sm:w-28 shrink-0 items-center justify-center rounded-xl bg-amber-accent text-navy-dark font-extrabold text-2xl tracking-tighter shadow-2xl select-none"
+          : "inline-flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-md bg-amber-accent text-navy-dark font-extrabold text-xs tracking-tighter select-none"
       }
       aria-hidden="true"
     >
