@@ -39,8 +39,8 @@ export function Logo({
         className={`inline-flex items-center gap-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-accent rounded ${className}`}
         aria-label={companyConfig.name}
       >
-        {/* Logo Mark target slot */}
-        <span className="relative inline-flex items-center justify-center min-w-[2rem] min-h-[2rem]">
+        {/* Logo Mark target slot in top-left header */}
+        <span className="relative inline-flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center">
           {!isFlyingAtCenter ? (
             <motion.span
               layoutId={
@@ -50,18 +50,18 @@ export function Logo({
                 layout: { duration: 0.65, ease: [0.22, 1, 0.36, 1] },
               }}
               style={{ willChange: "transform, opacity" }}
-              className="inline-flex items-center justify-center"
+              className="inline-flex h-full w-full items-center justify-center"
             >
               <BrandMarkVisual hasLogoImage={hasLogoImage} size="header" />
             </motion.span>
           ) : (
-            <span className="opacity-0 pointer-events-none inline-flex items-center justify-center">
+            <span className="opacity-0 pointer-events-none inline-flex h-full w-full items-center justify-center">
               <BrandMarkVisual hasLogoImage={hasLogoImage} size="header" />
             </span>
           )}
         </span>
 
-        {/* Slide/clip reveal of "NAV INDIA ENTERPRISES" to the right of the logo */}
+        {/* Slide/clip reveal of "NAV INDIA ENTERPRISES" to the right AFTER the logo lands */}
         <span className="overflow-hidden inline-flex items-center py-0.5">
           <motion.span
             initial={
