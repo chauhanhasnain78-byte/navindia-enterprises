@@ -71,10 +71,12 @@ export default function RootLayout({
         <meta property="og:image:alt" content={companyConfig.name} />
         <meta name="twitter:image" content={companyConfig.logo.path} />
       </head>
-      <body className="min-h-screen flex flex-col font-sans bg-white text-navy selection:bg-amber-accent selection:text-navy-dark">
+      <body className="min-h-screen w-full max-w-[100vw] overflow-x-hidden flex flex-col font-sans bg-white text-navy selection:bg-amber-accent selection:text-navy-dark">
         <IntroMotionProvider>
           <Header />
-          <main className="flex-1">{children}</main>
+          <main className="flex-1 w-full min-w-0 max-w-full overflow-x-hidden">
+            {children}
+          </main>
           <Footer />
           <FloatingActions />
         </IntroMotionProvider>

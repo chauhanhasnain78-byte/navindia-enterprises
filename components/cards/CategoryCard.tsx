@@ -109,14 +109,14 @@ export function CategoryCard({
   );
 
   return (
-    <div ref={cardRef} className="h-full">
+    <div ref={cardRef} className="h-full w-full">
       <Link
         href={`/products/${category.slug}`}
         draggable={false}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         style={{ touchAction: "pan-x pan-y" }}
-        className="group relative flex h-full flex-col justify-between rounded-xl border border-silver bg-white p-5 sm:p-6 shadow-card transition-transform transition-colors duration-300 sm:hover:-translate-y-1.5 hover:border-amber-accent/70 active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-accent overflow-hidden select-none"
+        className="group relative flex h-full w-full flex-col justify-between rounded-xl border border-silver bg-white p-5 sm:p-6 shadow-card transition-transform transition-colors duration-300 sm:hover:-translate-y-1.5 hover:border-amber-accent/70 active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-accent overflow-hidden"
       >
         {/* Soft border glow overlay on hover (animates opacity only for 60fps) */}
         <span
@@ -124,20 +124,28 @@ export function CategoryCard({
           className="pointer-events-none absolute inset-0 rounded-xl ring-2 ring-amber-accent/35 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
         />
 
-        <div className="relative z-10 pointer-events-none">
-          {/* Visual Preview Container: [&_*]:!pointer-events-none & [&_*]:!touch-auto guarantees R3F wrapper div and canvas never block mobile finger swipe */}
-          <div className="relative mb-5 flex h-36 w-full items-center justify-center overflow-hidden rounded-lg bg-steel-light/65 border border-silver/50 pointer-events-none [&_*]:!pointer-events-none [&_*]:!touch-auto">
-            {show3D ? (
-              <CanvasErrorBoundary fallback={staticFallback}>
-                <Category3DScene
-                  shapeType={category.shapeType}
-                  isHovered={isHovered}
-                />
-              </CanvasErrorBoundary>
-            ) : (
-              staticFallback
-            )}
-            <span className="pointer-events-none absolute right-2.5 top-2.5 rounded bg-white/85 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-steel border border-silver/60">
+        <div className="relative z-10">
+          {/* Visual Preview Container with transparent touch-passthrough overlay */}
+          <div className="relative mb-5 flex h-36 w-full items-center justify-center overflow-hidden rounded-lg bg-steel-light/65 border border-silver/50">
+            <div className="pointer-events-none h-full w-full [&_*]:!pointer-events-none">
+              {show3D ? (
+                <CanvasErrorBoundary fallback={staticFallback}>
+                  <Category3DScene
+                    shapeType={category.shapeType}
+                    isHovered={isHovered}
+                  />
+                </CanvasErrorBoundary>
+              ) : (
+                staticFallback
+              )}
+            </div>
+            {/* Transparent touch shield over the 3D canvas so mobile swipe gestures always hit standard HTML */}
+            <div
+              aria-hidden="true"
+              style={{ touchAction: "pan-x pan-y" }}
+              className="absolute inset-0 z-20 bg-transparent"
+            />
+            <span className="pointer-events-none absolute right-2.5 top-2.5 z-30 rounded bg-white/85 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-steel border border-silver/60">
               Spec-Based
             </span>
           </div>
@@ -154,7 +162,7 @@ export function CategoryCard({
         </div>
 
         {/* Bottom Link Indicator */}
-        <div className="relative z-10 mt-5 flex items-center justify-between border-t border-silver/50 pt-3.5 text-xs font-semibold uppercase tracking-wider text-navy pointer-events-none">
+        <div className="relative z-10 mt-5 flex items-center justify-between border-t border-silver/50 pt-3.5 text-xs font-semibold uppercase tracking-wider text-navy">
           <span>View Category</span>
           <span
             className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-steel-light text-navy transition-transform transition-colors duration-200 group-hover:translate-x-0.5 group-hover:bg-amber-accent group-hover:text-navy-dark"

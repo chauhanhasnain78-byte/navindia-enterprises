@@ -27,7 +27,7 @@ export function ProductCategoriesSection() {
 
   const scrollHorizontal = (direction: "left" | "right") => {
     if (!scrollContainerRef.current) return;
-    const distance = direction === "left" ? -290 : 290;
+    const distance = direction === "left" ? -285 : 285;
     scrollContainerRef.current.scrollBy({
       left: distance,
       behavior: "smooth",
@@ -37,7 +37,7 @@ export function ProductCategoriesSection() {
   return (
     <section
       id="products"
-      className="py-16 sm:py-24 bg-steel-light/50 border-b border-silver/60"
+      className="py-16 sm:py-24 bg-steel-light/50 border-b border-silver/60 w-full max-w-full overflow-x-hidden"
     >
       <Container>
         <SectionHeading
@@ -48,25 +48,19 @@ export function ProductCategoriesSection() {
 
         {/* Categories: Horizontally swipeable on mobile (<768px), 2 cols on tablet, 4 cols on desktop */}
         {filteredCategories.length > 0 ? (
-          <motion.div
-            initial={{ opacity: 0, y: 18 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-40px" }}
-            transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-            className="mt-10"
-          >
+          <div className="mt-10 w-full min-w-0 max-w-full">
             <div
               ref={scrollContainerRef}
               style={{
                 WebkitOverflowScrolling: "touch",
                 touchAction: "pan-x pan-y",
               }}
-              className="flex flex-nowrap md:grid md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 w-full overflow-x-auto md:overflow-visible pb-4 pt-1 snap-x snap-mandatory"
+              className="flex flex-nowrap md:grid md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 w-full max-w-[calc(100vw-2rem)] sm:max-w-[calc(100vw-3rem)] md:max-w-none overflow-x-auto md:overflow-visible pb-4 pt-1 snap-x snap-mandatory"
             >
               {filteredCategories.map((category) => (
                 <div
                   key={category.id}
-                  className="w-[78vw] max-w-[290px] flex-none snap-start md:w-auto md:max-w-none md:flex-initial"
+                  className="w-[78vw] max-w-[280px] shrink-0 snap-start md:w-auto md:max-w-none md:shrink"
                 >
                   <CategoryCard category={category} enable3D={true} />
                 </div>
@@ -74,9 +68,9 @@ export function ProductCategoriesSection() {
             </div>
 
             {/* Mobile Swipe Controls (<768px) */}
-            <div className="mt-3 flex items-center justify-between md:hidden">
+            <div className="mt-2 flex items-center justify-between md:hidden">
               <p className="text-xs font-semibold text-steel">
-                Swipe left/right or tap arrows ({filteredCategories.length} categories)
+                Swipe cards left/right or tap arrows ({filteredCategories.length} categories)
               </p>
               <div className="flex items-center gap-2">
                 <button
@@ -97,7 +91,7 @@ export function ProductCategoriesSection() {
                 </button>
               </div>
             </div>
-          </motion.div>
+          </div>
         ) : (
           <motion.div
             initial={{ opacity: 0 }}
