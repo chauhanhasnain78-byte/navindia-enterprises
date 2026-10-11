@@ -3,7 +3,6 @@
 import React, { Component, useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { motion } from "framer-motion";
 import { ProductCategory } from "@/config/company";
 import { CategoryStaticIcon } from "./CategoryStaticIcon";
 
@@ -64,7 +63,7 @@ export function CategoryCard({
 }: CategoryCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [isInViewport, setIsInViewport] = useState(false);
-  const [isHoveredOrTouched, setIsHoveredOrTouched] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
   const [webglAvailable, setWebglAvailable] = useState(false);
 
   useEffect(() => {
@@ -87,8 +86,8 @@ export function CategoryCard({
         }
       },
       {
-        rootMargin: "60px",
-        threshold: 0.1,
+        rootMargin: "120px",
+        threshold: 0.05,
       }
     );
 
@@ -98,8 +97,7 @@ export function CategoryCard({
     };
   }, [enable3D]);
 
-  const show3D =
-    enable3D && webglAvailable && (isInViewport || isHoveredOrTouched);
+  const show3D = enable3D && webglAvailable && (isInViewport || isHovered);
 
   const staticFallback = (
     <div className="flex h-full w-full items-center justify-center pointer-events-none">
@@ -111,18 +109,14 @@ export function CategoryCard({
   );
 
   return (
-    <motion.div
-      ref={cardRef}
-      whileHover={{ y: -5 }}
-      transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-      style={{ willChange: "transform" }}
-      className="h-full"
-    >
+    <div ref={cardRef} className="h-full">
       <Link
         href={`/products/${category.slug}`}
-        onMouseEnter={() => setIsHoveredOrTouched(true)}
-        onMouseLeave={() => setIsHoveredOrTouched(false)}
-        className="group relative flex h-full flex-col justify-between rounded-xl border border-silver bg-white p-5 sm:p-6 shadow-card transition-colors duration-300 hover:border-amber-accent/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-accent overflow-hidden touch-pan-x"
+        draggable={false}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        style={{ touchAction: "pan-x pan-y" }}
+        className="group relative flex h-full flex-col justify-between rounded-xl border border-silver bg-white p-5 sm:p-6 shadow-card transition-transform transition-colors duration-300 sm:hover:-translate-y-1.5 hover:border-amber-accent/70 active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-accent overflow-hidden select-none"
       >
         {/* Soft border glow overlay on hover (animates opacity only for 60fps) */}
         <span
@@ -130,14 +124,14 @@ export function CategoryCard({
           className="pointer-events-none absolute inset-0 rounded-xl ring-2 ring-amber-accent/35 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
         />
 
-        <div className="relative z-10">
-          {/* Visual Preview Container: [&_canvas]:!pointer-events-none & !touch-auto ensures R3F canvas never blocks mobile swiping */}
-          <div className="relative mb-5 flex h-36 w-full items-center justify-center overflow-hidden rounded-lg bg-steel-light/65 border border-silver/50 pointer-events-none [&_canvas]:!pointer-events-none [&_canvas]:!touch-auto">
+        <div className="relative z-10 pointer-events-none">
+          {/* Visual Preview Container: [&_*]:!pointer-events-none & [&_*]:!touch-auto guarantees R3F wrapper div and canvas never block mobile finger swipe */}
+          <div className="relative mb-5 flex h-36 w-full items-center justify-center overflow-hidden rounded-lg bg-steel-light/65 border border-silver/50 pointer-events-none [&_*]:!pointer-events-none [&_*]:!touch-auto">
             {show3D ? (
               <CanvasErrorBoundary fallback={staticFallback}>
                 <Category3DScene
                   shapeType={category.shapeType}
-                  isHovered={isHoveredOrTouched}
+                  isHovered={isHovered}
                 />
               </CanvasErrorBoundary>
             ) : (
@@ -160,7 +154,7 @@ export function CategoryCard({
         </div>
 
         {/* Bottom Link Indicator */}
-        <div className="relative z-10 mt-5 flex items-center justify-between border-t border-silver/50 pt-3.5 text-xs font-semibold uppercase tracking-wider text-navy">
+        <div className="relative z-10 mt-5 flex items-center justify-between border-t border-silver/50 pt-3.5 text-xs font-semibold uppercase tracking-wider text-navy pointer-events-none">
           <span>View Category</span>
           <span
             className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-steel-light text-navy transition-transform transition-colors duration-200 group-hover:translate-x-0.5 group-hover:bg-amber-accent group-hover:text-navy-dark"
@@ -170,6 +164,6 @@ export function CategoryCard({
           </span>
         </div>
       </Link>
-    </motion.div>
+    </div>
   );
 }

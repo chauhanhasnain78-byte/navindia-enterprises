@@ -237,7 +237,12 @@ export default function Category3DScene({
       dpr={[1, 1.5]}
       camera={{ position: [0, 0, 3.1], fov: 42 }}
       gl={{ antialias: true, alpha: true, powerPreference: "low-power" }}
-      style={{ width: "100%", height: "100%", pointerEvents: "none" }}
+      style={{
+        width: "100%",
+        height: "100%",
+        pointerEvents: "none",
+        touchAction: "pan-x pan-y",
+      }}
     >
       <ambientLight intensity={1.1} />
       <directionalLight position={[4, 6, 5]} intensity={1.6} />

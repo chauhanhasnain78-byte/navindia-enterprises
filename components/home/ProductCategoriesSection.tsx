@@ -27,7 +27,7 @@ export function ProductCategoriesSection() {
 
   const scrollHorizontal = (direction: "left" | "right") => {
     if (!scrollContainerRef.current) return;
-    const distance = direction === "left" ? -300 : 300;
+    const distance = direction === "left" ? -290 : 290;
     scrollContainerRef.current.scrollBy({
       left: distance,
       behavior: "smooth",
@@ -46,58 +46,58 @@ export function ProductCategoriesSection() {
           subtitle="Browse our core industrial product groups or search below to send us your custom requirement."
         />
 
-        {/* Categories: Horizontally scrollable on mobile, 2 cols on tablet, 4 cols on large screens */}
+        {/* Categories: Horizontally swipeable on mobile (<768px), 2 cols on tablet, 4 cols on desktop */}
         {filteredCategories.length > 0 ? (
-          <div className="mt-10">
+          <motion.div
+            initial={{ opacity: 0, y: 18 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-40px" }}
+            transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+            className="mt-10"
+          >
             <div
               ref={scrollContainerRef}
-              style={{ WebkitOverflowScrolling: "touch", touchAction: "pan-x pan-y" }}
-              className="flex sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 overflow-x-auto sm:overflow-visible pb-4 sm:pb-0 snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0 no-scrollbar"
+              style={{
+                WebkitOverflowScrolling: "touch",
+                touchAction: "pan-x pan-y",
+              }}
+              className="flex flex-nowrap md:grid md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 w-full overflow-x-auto md:overflow-visible pb-4 pt-1 snap-x snap-mandatory"
             >
-              {filteredCategories.map((category, index) => (
-                <motion.div
+              {filteredCategories.map((category) => (
+                <div
                   key={category.id}
-                  initial={{ opacity: 0, y: 18 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: "-40px" }}
-                  transition={{
-                    duration: 0.4,
-                    delay: Math.min(index * 0.06, 0.3),
-                    ease: [0.22, 1, 0.36, 1],
-                  }}
-                  style={{ willChange: "transform, opacity" }}
-                  className="w-[82vw] max-w-[310px] shrink-0 snap-start sm:w-auto sm:max-w-none sm:shrink"
+                  className="w-[78vw] max-w-[290px] flex-none snap-start md:w-auto md:max-w-none md:flex-initial"
                 >
                   <CategoryCard category={category} enable3D={true} />
-                </motion.div>
+                </div>
               ))}
             </div>
 
-            {/* Mobile Swipe Hint + Prev/Next Buttons */}
-            <div className="mt-2 flex items-center justify-between sm:hidden">
-              <p className="text-xs font-medium text-steel">
-                Swipe or tap arrows to view all {filteredCategories.length} categories
+            {/* Mobile Swipe Controls (<768px) */}
+            <div className="mt-3 flex items-center justify-between md:hidden">
+              <p className="text-xs font-semibold text-steel">
+                Swipe left/right or tap arrows ({filteredCategories.length} categories)
               </p>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => scrollHorizontal("left")}
-                  aria-label="Previous category"
-                  className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-silver bg-white text-navy shadow-sm active:scale-95"
+                  aria-label="Scroll categories left"
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-silver bg-white text-navy font-bold shadow-sm active:scale-95"
                 >
                   &larr;
                 </button>
                 <button
                   type="button"
                   onClick={() => scrollHorizontal("right")}
-                  aria-label="Next category"
-                  className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-silver bg-white text-navy shadow-sm active:scale-95"
+                  aria-label="Scroll categories right"
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-silver bg-white text-navy font-bold shadow-sm active:scale-95"
                 >
                   &rarr;
                 </button>
               </div>
             </div>
-          </div>
+          </motion.div>
         ) : (
           <motion.div
             initial={{ opacity: 0 }}
